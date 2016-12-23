@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-#Time-stamp: <2016-12-24 02:40:27 hamada>
+#Time-stamp: <2016-12-24 02:48:30 hamada>
 import OpenGL 
 OpenGL.ERROR_ON_COPYs = True 
 from OpenGL.GL import *
@@ -62,6 +62,19 @@ def reshape(width, height):
     glLoadIdentity()
     glTranslatef(0.0, 0.0, -40.0)
 
+
+def key(k, x, y):
+    global viewer
+
+    if  k == 'q':
+        sys.exit(0)
+    elif ord(k) == 27: # Escape
+        sys.exit(0)
+    else:
+        return
+
+    glutPostRedisplay()
+
 def init():
     glLightfv(GL_LIGHT0, GL_AMBIENT, vec4(0.5, 0.1,  -0.1, 0.1))
     glLightfv(GL_LIGHT1, GL_AMBIENT, vec4(0.5, 0.1,  1.0,  0.1))
@@ -82,6 +95,7 @@ if __name__ == '__main__':
 
     glutDisplayFunc(draw)
     glutReshapeFunc(reshape)
+    glutKeyboardFunc(key)
 
     if "--info" in sys.argv:
         print "GL_RENDERER   = ", glGetString(GL_RENDERER)
