@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # SPHpy
-# Time-stamp: <2016-12-24 05:19:25 hamada>
+# Time-stamp: <2016-12-24 05:36:35 hamada>
 
 import OpenGL 
 OpenGL.ERROR_ON_COPY = True 
@@ -152,7 +152,7 @@ def sph_init():
     sparams.sim_box_min   = [ -5.0, -10.0,  -1.]
     sparams.sim_box_max   = [  5.0,  10.0,   1.]
     sparams.viscosity = 0.1
-    sparams.dt = 0.05
+    sparams.dt = 0.03
     sparams.limit=100.0
     sparams.boundary_damp = 256.0/ 200.
     viewer.sphere_radius_coef = 144.0
@@ -468,6 +468,20 @@ def draw_box():
     glEnd()
 
 
+istep = 0
+
+def update():
+    global istep
+    print istep
+
+#    if (0 == istep % 2):
+    draw()
+
+    simulate()
+    istep += 1
+
+
+
 def draw():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_MODELVIEW)
@@ -493,7 +507,6 @@ def draw():
     glutSwapBuffers()
 
     framerate()
-    simulate()
     
 def idle():
     glutPostRedisplay()
@@ -688,7 +701,7 @@ if __name__ == '__main__':
     glutCreateWindow("SPHpy")
     init()
     
-    glutDisplayFunc(draw)
+    glutDisplayFunc(update)
     glutReshapeFunc(reshape)
     glutKeyboardFunc(key)
     glutSpecialFunc(special)
