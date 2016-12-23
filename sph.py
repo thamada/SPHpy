@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-#Time-stamp: <2016-12-24 02:48:30 hamada>
+#Time-stamp: <2016-12-24 02:50:50 hamada>
 import OpenGL 
 OpenGL.ERROR_ON_COPYs = True 
 from OpenGL.GL import *
@@ -62,6 +62,9 @@ def reshape(width, height):
     glLoadIdentity()
     glTranslatef(0.0, 0.0, -40.0)
 
+def idle():
+    glutPostRedisplay()
+
 
 def key(k, x, y):
     global viewer
@@ -85,6 +88,10 @@ def init():
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_NORMALIZE)
 
+def visible(vis):
+    if vis == GLUT_VISIBLE:
+        glutIdleFunc(idle)
+
 if __name__ == '__main__':
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH)
@@ -96,6 +103,7 @@ if __name__ == '__main__':
     glutDisplayFunc(draw)
     glutReshapeFunc(reshape)
     glutKeyboardFunc(key)
+    glutVisibilityFunc(visible)
 
     if "--info" in sys.argv:
         print "GL_RENDERER   = ", glGetString(GL_RENDERER)
