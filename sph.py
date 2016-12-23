@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-#Time-stamp: <2016-12-24 02:59:31 hamada>
+#Time-stamp: <2016-12-24 03:05:27 hamada>
 import OpenGL 
 OpenGL.ERROR_ON_COPYs = True 
 from OpenGL.GL import *
@@ -76,6 +76,22 @@ def draw():
 
     glPopMatrix()
     glutSwapBuffers()
+
+
+def motion(x, y):
+    global viewer
+    print "motion: ", x, y, viewer.trans
+    if viewer.mouse_l == 1 :
+        speed = 1.2
+        viewer.view_rot[0] = (y - viewer.mpos[1]) * speed
+        viewer.view_rot[2] = (x - viewer.mpos[0]) * speed
+    elif viewer.mouse_r == 1:
+        viewer.trans[1] += (x - viewer.mpos[0]) * 0.01
+        viewer.trans[2] -= (y - viewer.mpos[1]) * 0.01
+        print viewer.trans
+
+    if viewer.mouse_l ==1 or viewer.mouse_m == 1 or viewer.mouse_r == 1:
+        glutPostRedisplay()
 
 def reshape(width, height):
     h = float(height) / float(width)
@@ -158,6 +174,7 @@ if __name__ == '__main__':
     glutReshapeFunc(reshape)
     glutKeyboardFunc(key)
     glutMouseFunc(mouse)
+    glutMotionFunc(motion)
     glutVisibilityFunc(visible)
 
     if "--info" in sys.argv:
