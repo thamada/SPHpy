@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-#Time-stamp: <2016-12-24 02:50:50 hamada>
+#Time-stamp: <2016-12-24 02:53:56 hamada>
 import OpenGL 
 OpenGL.ERROR_ON_COPYs = True 
 from OpenGL.GL import *
@@ -78,6 +78,35 @@ def key(k, x, y):
 
     glutPostRedisplay()
 
+
+def mouse(button, state, x, y):
+    global viewer
+    
+    if button == GLUT_LEFT_BUTTON:
+        if state == GLUT_DOWN: 
+            viewer.mpos[0] = x
+            viewer.mpos[1] = y
+            viewer.mouse_l = 1
+        if state == GLUT_UP:
+            viewer.mouse_l = 0
+    elif button == GLUT_MIDDLE_BUTTON:
+        if state == GLUT_DOWN:
+            viewer.mpos[0] = x
+            viewer.mpos[1] = y
+            viewer.mouse_m = 1
+        if state == GLUT_UP:
+            viewer.mouse_m = 0
+    elif button == GLUT_RIGHT_BUTTON:
+        if state == GLUT_DOWN:
+            viewer.mpos[0] = x
+            viewer.mpos[1] = y
+            viewer.mouse_r = 1
+        if state == GLUT_UP:
+            viewer.mouse_r = 0
+    else:
+        return
+
+
 def init():
     glLightfv(GL_LIGHT0, GL_AMBIENT, vec4(0.5, 0.1,  -0.1, 0.1))
     glLightfv(GL_LIGHT1, GL_AMBIENT, vec4(0.5, 0.1,  1.0,  0.1))
@@ -103,6 +132,7 @@ if __name__ == '__main__':
     glutDisplayFunc(draw)
     glutReshapeFunc(reshape)
     glutKeyboardFunc(key)
+    glutMouseFunc(mouse)
     glutVisibilityFunc(visible)
 
     if "--info" in sys.argv:
