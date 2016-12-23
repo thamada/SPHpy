@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # SPHpy
-# Time-stamp: <2016-12-24 05:36:35 hamada>
+# Time-stamp: <2016-12-24 05:53:24 hamada>
 
 import OpenGL 
 OpenGL.ERROR_ON_COPY = True 
@@ -468,17 +468,20 @@ def draw_box():
     glEnd()
 
 
-istep = 0
-
 def update():
-    global istep
-    print istep
-
-#    if (0 == istep % 2):
-    draw()
-
+    global viewer
+    istep = viewer.sim_step
     simulate()
-    istep += 1
+
+    draw()
+'''
+    if (0 == istep % 2):
+        draw()
+'''
+
+
+
+
 
 
 
