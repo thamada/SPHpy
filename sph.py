@@ -9,6 +9,8 @@ import sys, time, math, random
 
 
 if __name__ == '__main__':
+    glutInit(sys.argv)
+
     print "Hello SPH.py"
 
 
