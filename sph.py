@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-#Time-stamp: <2016-12-24 02:53:56 hamada>
+#Time-stamp: <2016-12-24 02:59:31 hamada>
 import OpenGL 
 OpenGL.ERROR_ON_COPYs = True 
 from OpenGL.GL import *
@@ -38,6 +38,29 @@ class Viewer:
 
 viewer = Viewer()
 
+def draw_box():
+    c_min = [ -6.0, -10.0,  -1.5]
+    c_max = [  6.0,  10.0,   1.5]
+
+    glLineWidth(2)
+    glBegin(GL_LINES)
+    glColor3f(1.0, 1.0, 1.0)
+    glVertex3f(c_min[0], c_min[1], c_min[2]),    glVertex3f(c_max[0], c_min[1], c_min[2])
+    glVertex3f(c_min[0], c_max[1], c_min[2]),    glVertex3f(c_max[0], c_max[1], c_min[2])
+    glVertex3f(c_min[0], c_min[1], c_max[2]),    glVertex3f(c_max[0], c_min[1], c_max[2])
+    glVertex3f(c_min[0], c_max[1], c_max[2]),    glVertex3f(c_max[0], c_max[1], c_max[2])
+
+    glVertex3f(c_min[0], c_min[1], c_min[2]),    glVertex3f(c_min[0], c_max[1], c_min[2])
+    glVertex3f(c_max[0], c_min[1], c_min[2]),    glVertex3f(c_max[0], c_max[1], c_min[2])
+    glVertex3f(c_min[0], c_min[1], c_max[2]),    glVertex3f(c_min[0], c_max[1], c_max[2])
+    glVertex3f(c_max[0], c_min[1], c_max[2]),    glVertex3f(c_max[0], c_max[1], c_max[2])
+
+    glVertex3f(c_min[0], c_min[1], c_min[2]),    glVertex3f(c_min[0], c_min[1], c_max[2])
+    glVertex3f(c_min[0], c_max[1], c_min[2]),    glVertex3f(c_min[0], c_max[1], c_max[2])
+    glVertex3f(c_max[0], c_min[1], c_min[2]),    glVertex3f(c_max[0], c_min[1], c_max[2])
+    glVertex3f(c_max[0], c_max[1], c_min[2]),    glVertex3f(c_max[0], c_max[1], c_max[2])
+    glEnd()
+
 def draw():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_MODELVIEW)
@@ -48,6 +71,8 @@ def draw():
     glRotatef(viewer.view_rot[0], 1.0, 0.0, 0.0)
     glRotatef(viewer.view_rot[1], 0.0, 1.0, 0.0)
     glRotatef(viewer.view_rot[2], 0.0, 0.0, 1.0)
+
+    draw_box()
 
     glPopMatrix()
     glutSwapBuffers()
