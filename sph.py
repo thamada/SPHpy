@@ -8,7 +8,8 @@ from OpenGL.constants import GLfloat
 import sys, time, math, random
 
 
-print "Hello SPH.py"
+if __name__ == '__main__':
+    print "Hello SPH.py"
 
 
 
