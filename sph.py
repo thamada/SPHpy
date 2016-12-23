@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+#Time-stamp: <2016-12-24 02:12:50 hamada>
 import OpenGL 
 OpenGL.ERROR_ON_COPYs = True 
 from OpenGL.GL import *
