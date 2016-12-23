@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-#Time-stamp: <2016-12-24 02:14:47 hamada>
+#Time-stamp: <2016-12-24 02:17:26 hamada>
 import OpenGL 
 OpenGL.ERROR_ON_COPYs = True 
 from OpenGL.GL import *
@@ -7,6 +7,8 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from OpenGL.constants import GLfloat
 import sys, time, math, random
+
+vec4 = GLfloat_4
 
 def init():
     glLightfv(GL_LIGHT0, GL_AMBIENT, vec4(0.5, 0.1,  -0.1, 0.1))
