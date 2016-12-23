@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # SPHpy
-# Time-stamp: <2016-12-24 05:13:23 hamada>
+# Time-stamp: <2016-12-24 05:19:25 hamada>
 
 import OpenGL 
 OpenGL.ERROR_ON_COPY = True 
@@ -152,8 +152,8 @@ def sph_init():
     sparams.sim_box_min   = [ -5.0, -10.0,  -1.]
     sparams.sim_box_max   = [  5.0,  10.0,   1.]
     sparams.viscosity = 0.1
-    sparams.dt = 0.03
-    sparams.limit=200.0
+    sparams.dt = 0.05
+    sparams.limit=100.0
     sparams.boundary_damp = 256.0/ 200.
     viewer.sphere_radius_coef = 144.0
     viewer.sphere_slic = 6
