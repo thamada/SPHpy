@@ -14,9 +14,9 @@ if __name__ == '__main__':
     glutInitWindowPosition(800, 0)
     glutInitWindowSize(800, 800)
     glutCreateWindow("SPHpy")
-    time.sleep(5)
 
-    print "Hello SPH.py"
+    glutMainLoop()
+
 
 
 
