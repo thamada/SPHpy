@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # SPHpy
-# Time-stamp: <2016-12-26 07:35:30 hamada>
+# Time-stamp: <2016-12-24 05:53:24 hamada>
 
 import OpenGL 
 OpenGL.ERROR_ON_COPY = True 
@@ -417,13 +417,6 @@ def draw_text():
     text_list.append( "viscosity: %.1e" % sparams.viscosity )
     text_list.append( "wall(e): %.2f" % (9.85e-3 / sparams.boundary_eps ) )
     text_list.append( "dt: %.2e" % sparams.dt)
-    text_list.append( " ")
-    text_list.append( "--- Keybind ---")
-    text_list.append( "k: rotate simulation box")
-    text_list.append( "j: rotate simulation box")
-    text_list.append( "[Space]: increase particles")
-    text_list.append( "-: reduce particles")
-    text_list.append( "q: quit")
 
     glColor4f( 1.0, 1.0, 0.5, 1.0 )
     glDisable(GL_DEPTH_TEST)
@@ -440,7 +433,7 @@ def draw_text():
 
     for s in text_list:
         glRasterPos2f(2.0, y)
-        y -= 47.
+        y -= 45.
         for c in s:
             glutBitmapCharacter(GLUT_BITMAP_8_BY_13, ord(c))
 
