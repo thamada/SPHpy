@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # SPHpy
-# Time-stamp: <2016-12-26 07:35:30 hamada>
+# Time-stamp: <2016-12-27 03:43:46 hamada>
 
 import OpenGL 
 OpenGL.ERROR_ON_COPY = True 
@@ -407,7 +407,7 @@ def framerate():
         viewer.fps_phys = fps_phys
 
 
-def draw_text():
+def draw_text_left_top():
     text_list = [ ]
     text_list.append( "simulation time : %f" % viewer.sim_time )
     text_list.append( "simulation steps: %d" % viewer.sim_step )
@@ -417,7 +417,34 @@ def draw_text():
     text_list.append( "viscosity: %.1e" % sparams.viscosity )
     text_list.append( "wall(e): %.2f" % (9.85e-3 / sparams.boundary_eps ) )
     text_list.append( "dt: %.2e" % sparams.dt)
-    text_list.append( " ")
+
+    glColor4f( 1.0, 1.0, 0.5, 1.0 )
+    glDisable(GL_DEPTH_TEST)
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+    glTranslatef(-.9, .8, 0)
+    glScalef(.0006, .0006, 1)
+
+    y = 10
+
+    for s in text_list:
+        glRasterPos2f(2.0, y)
+        y -= 47.
+        for c in s:
+            glutBitmapCharacter(GLUT_BITMAP_8_BY_13, ord(c))
+
+    glPopMatrix()
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
+    glEnable(GL_DEPTH_TEST)
+
+def draw_text_left_down():
+    text_list = [ ]
     text_list.append( "--- Keybind ---")
     text_list.append( "k: rotate simulation box")
     text_list.append( "j: rotate simulation box")
@@ -436,11 +463,11 @@ def draw_text():
     glTranslatef(-.9, .8, 0)
     glScalef(.0006, .0006, 1)
 
-    y = 10
+    y = -2600
 
     for s in text_list:
         glRasterPos2f(2.0, y)
-        y -= 47.
+        y -= 53.
         for c in s:
             glutBitmapCharacter(GLUT_BITMAP_8_BY_13, ord(c))
 
@@ -513,7 +540,8 @@ def draw():
     draw_box()
     glPopMatrix()
 
-    draw_text()
+    draw_text_left_top()
+    draw_text_left_down()
     glutSwapBuffers()
 
     framerate()
