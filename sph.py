@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # SPHpy
-# Time-stamp: <2016-12-27 03:43:46 hamada>
+# Time-stamp: <2016-12-28 17:21:37 hamada>
 
 import OpenGL 
 OpenGL.ERROR_ON_COPY = True 
@@ -747,7 +747,7 @@ if __name__ == '__main__':
     glutMotionFunc(motion)
     glutVisibilityFunc(visible)
 
-    if "-info" in sys.argv:
+    if "--info" in sys.argv:
         print "GL_RENDERER   = ", glGetString(GL_RENDERER)
         print "GL_VERSION    = ", glGetString(GL_VERSION)
         print "GL_VENDOR     = ", glGetString(GL_VENDOR)
