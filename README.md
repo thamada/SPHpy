@@ -1,10 +1,16 @@
-#!Time-stamp: <2016-12-28 17:20:27 hamada>
+#!Time-stamp: <2016-12-29 02:37:51 hamada>
 
-SPHpy:
+# SPHpy:
 Smoothed Particle Hydrodynamics written in python.
 
 ---
-# Keybind
+## Requirements
+
+- python 2.7.x
+- pyOpenGL
+
+---
+## Keybind
 
 - k: rotate simulation box
 - j: rotate simulation box
