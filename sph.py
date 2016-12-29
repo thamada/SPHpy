@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # SPHpy
-# Time-stamp: <2016-12-28 17:21:37 hamada>
+# Time-stamp: <2016-12-30 04:54:53 hamada>
 
 import OpenGL 
 OpenGL.ERROR_ON_COPY = True 
@@ -523,7 +523,7 @@ def draw():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    gluLookAt(0., 0.,-40.+viewer.trans[2], 0.0, 0.0,  0.0, 0.0, 1.0, 0.0) 
+    gluLookAt(0., 0., -28.0-viewer.trans[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
 
     glPushMatrix()
     glRotatef(viewer.view_rot[0], 1.0, 0.0, 0.0)
@@ -688,7 +688,7 @@ def reshape(width, height):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
 #    glFrustum(-1.0, 1.0, -h, h, 5.0, 60.0)
-    gluPerspective(30.0, h, 0.001, 1000.0)
+    gluPerspective(100.0, h, 0.001, 1000.0)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
     glTranslatef(0.0, 0.0, -40.0)
