@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # GRAVpy
-# Time-stamp: <2017-01-04 01:25:28 hamada>
+# Time-stamp: <2017-01-04 01:43:00 hamada>
 
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
@@ -120,7 +120,7 @@ viewer = Viewer()
 sparams = SPH_Parameters()
 
 
-def sph_init():
+def nbody_init():
     global particles, sparams
 
     #---------------------------------------------------------
@@ -134,23 +134,12 @@ def sph_init():
     sparams.boundary_eps = 4.37893890381e-3
 
     # initial distance between SPH particles
-    d  = ((sparams.mass / sparams.fluid_density)**(1/3.0))  # (meter)
+    d = ((sparams.mass / sparams.fluid_density)**(1/3.0)) # (meter)
     d = d * 0.87 / sparams.scale # scaled
 
-    # for Gaming Condition1
-    sparams.sim_box_min   = [ -5.0, -10.0,  -5.]
-    sparams.sim_box_max   = [  5.0,  10.0,   5.]
-    sparams.viscosity = 1.e8
-    sparams.dt = 0.05
-    sparams.limit=200.0
-    sparams.boundary_damp = 256.0/ 200.
-    viewer.sphere_radius_coef = 144.0
-    viewer.sphere_slic = 6
-    viewer.sphere_stack = 6
-
-    # for Gaming Condition2
-    sparams.sim_box_min   = [ -5.0, -5.0,  -5.]
-    sparams.sim_box_max   = [  5.0,  5.0,   5.]
+    # for Gaming Condition
+    sparams.sim_box_min   = [ -8.0, -8.0,  -8.]
+    sparams.sim_box_max   = [  8.0,  8.0,   8.]
     sparams.viscosity = 0.1
     sparams.dt = 0.006
     sparams.limit = 100.0
@@ -397,6 +386,8 @@ def framerate():
 
 
 def draw_text_left_top():
+    global particles
+
     text_list = [ ]
     text_list.append( "simulation time : %f" % viewer.sim_time )
     text_list.append( "simulation steps: %d" % viewer.sim_step )
@@ -406,6 +397,7 @@ def draw_text_left_top():
     text_list.append( "viscosity: %.1e" % sparams.viscosity )
     text_list.append( "wall(e): %.2f" % (9.85e-3 / sparams.boundary_eps ) )
     text_list.append( "dt: %.2e" % sparams.dt)
+    text_list.append( "number of particles: %d" % len(particles))
 
     glColor4f( 1.0, 1.0, 0.5, 1.0 )
     glDisable(GL_DEPTH_TEST)
@@ -700,7 +692,7 @@ def init():
     glEnable(GL_LIGHT1)
     glEnable(GL_DEPTH_TEST)
 
-    sph_init()
+    nbody_init()
 
     for i in range(0, len(particles)):
         p = particles[i]
