@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # GRAVpy
-# Time-stamp: <2017-01-04 01:43:00 hamada>
+# Time-stamp: <2017-01-04 01:48:26 hamada>
 
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
@@ -121,7 +121,7 @@ sparams = SPH_Parameters()
 
 
 def nbody_init():
-    global particles, sparams
+    global particles, sparams, viewer
 
     #---------------------------------------------------------
     sparams.sim_box_min   = [ -6.0, -10.0,  -1.5]
@@ -282,11 +282,11 @@ def time_integration_LeapFrog2ndOrder():
 
     dt = sparams.dt
 
-    if is_first_integral==True:
+    if True == is_first_integral:
         calculate_rho_p()
         calculate_force()
         calculate_boundary_condition()
-        is_first_integral=False
+        is_first_integral = False
 
     for pi in particles:
         pi.v = [ pi.v[k] + pi.a[k] * dt * 0.5 for k in range(0,3) ]

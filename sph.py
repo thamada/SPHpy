@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # SPHpy
-# Time-stamp: <2016-12-30 04:54:53 hamada>
+# Time-stamp: <2017-01-04 01:50:55 hamada>
 
 import OpenGL 
 OpenGL.ERROR_ON_COPY = True 
@@ -121,7 +121,7 @@ sparams = SPH_Parameters()
 
 
 def sph_init():
-    global particles, sparams
+    global particles, sparams,  viewer
 
     #---------------------------------------------------------
     sparams.sim_box_min   = [ -6.0, -10.0,  -1.5]
@@ -207,7 +207,7 @@ def sph_init():
 # density(rho) and pressure(p)
 #  using 6-th order polynominal Kernel
 def calculate_rho_p():
-    global particles
+    global particles, sparams
 
     m = sparams.mass # mass for each SPH particles
     h =  sparams.effective_radius
@@ -233,7 +233,7 @@ def calculate_rho_p():
 # calclate force
 #   using Spiky Kernel
 def calculate_force():
-    global particles
+    global particles, sparams
     h  = sparams.effective_radius
     h6 = sparams.h6
     h6pi = h6 * math.pi
@@ -257,7 +257,7 @@ def calculate_force():
 
 
 def calculate_boundary_condition():
-    global particles
+    global particles, sparams
     c_scale = sparams.scale
     c_da  = sparams.boundary_damp
     c_re  = sparams.boundary_repu
@@ -299,7 +299,7 @@ def time_integration():
 # 2nd order Leapfrog (Velocity Verlet scheme) integration 
 is_first_integral=True
 def time_integration_LeapFrog2ndOrder():
-    global particles
+    global particles, sparams, viewer
     global is_first_integral
 
     dt = sparams.dt
@@ -328,7 +328,7 @@ def time_integration_LeapFrog2ndOrder():
 
 # 1st order Euler integration 
 def time_integration_Euler1stOrder():
-    global particles
+    global particles, sparams, viewer
 
     dt = sparams.dt
 
