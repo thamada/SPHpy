@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # GRAVpy
-# Time-stamp: <2017-01-04 00:15:30 hamada>
+# Time-stamp: <2017-01-04 00:26:03 hamada>
 
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
@@ -272,6 +272,30 @@ def calculate_boundary_condition():
     c_max = sparams.sim_box_max
 
     for pi in particles:
+        # wall X
+        diff = 2.0 * c_r - ( pi.r[0] - c_min[0] ) * c_scale
+        if  diff > c_eps :          pi.v[0] = pi.v[0] * -1.0
+
+        diff = 2.0 * c_r - ( c_max[0] - pi.r[0] ) * c_scale
+        if  diff > c_eps :          pi.v[0] = pi.v[0] * -1.0
+
+        # wall Y
+        diff = 2.0 * c_r - ( pi.r[1] - c_min[1] ) * c_scale
+        if diff > c_eps:            pi.v[1] = pi.v[1] * -1.0
+
+        diff = 2.0 * c_r - ( c_max[1] - pi.r[1] ) * c_scale
+        if diff > c_eps:            pi.v[1] = pi.v[1] * -1.0
+
+        # wall Z
+        diff = 2.0 * c_r - (pi.r[2] - c_min[2]) * c_scale
+        if diff > c_eps:            pi.v[2] = pi.v[2] * -1.0
+
+        diff = 2.0 * c_r - ( c_max[2] - pi.r[2] ) * c_scale
+        if diff > c_eps:            pi.v[2] = pi.v[2] * -1.0
+
+
+'''
+    for pi in particles:
         acc = [ pi.f[k] * c_m for k in range(0,3) ]
         acc2 = acc[0]*acc[0] + acc[1]*acc[1] + acc[2]*acc[2]
         if acc2 > sparams.limit**2.: acc = [ acc[k] * sparams.limit / (acc2**0.5) for k in range(0,3) ]
@@ -292,8 +316,10 @@ def calculate_boundary_condition():
         if diff > c_eps:            acc[2] -= c_re * diff + c_da * pi.v[2]
 
         # gravitational force from the earth
-#        acc = [ acc[k] + sparams.grav_const[k] for k in range(0,3) ]
+        acc = [ acc[k] + sparams.grav_const[k] for k in range(0,3) ]
         pi.a += acc
+'''
+
 
 
 
