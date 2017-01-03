@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # GRAVpy
-# Time-stamp: <2017-01-03 23:31:59 hamada>
+# Time-stamp: <2017-01-03 23:47:34 hamada>
 
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
@@ -288,7 +288,7 @@ def calculate_boundary_condition():
         if diff > c_eps:            acc[2] -= c_re * diff + c_da * pi.v[2]
 
         # gravitational force from the earth
-#        acc = [ acc[k] + sparams.grav_const[k] for k in range(0,3) ]
+        acc = [ acc[k] + sparams.grav_const[k] for k in range(0,3) ]
         pi.a = acc
 
 
