@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # GRAVpy
-# Time-stamp: <2017-01-04 00:47:45 hamada>
+# Time-stamp: <2017-01-04 01:25:28 hamada>
 
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
@@ -152,8 +152,8 @@ def sph_init():
     sparams.sim_box_min   = [ -5.0, -5.0,  -5.]
     sparams.sim_box_max   = [  5.0,  5.0,   5.]
     sparams.viscosity = 0.1
-    sparams.dt = 0.03
-    sparams.limit=100.0
+    sparams.dt = 0.006
+    sparams.limit = 100.0
     sparams.boundary_damp = 256.0/ 200.
     viewer.sphere_radius_coef = 144.0
     viewer.sphere_slic = 6
@@ -163,33 +163,23 @@ def sph_init():
     d  = ((sparams.mass / sparams.fluid_density)**(1/3.0))  # (meter)
     d = d * 0.87 / sparams.scale # scaled
 
-    xmax = 0.1 # sparams.init_dist_max[0]
-    xmin = 0.0 # sparams.init_dist_min[0]
-    ymax = 0.1 # sparams.init_dist_max[1]
-    ymin = 0.0 # sparams.init_dist_min[1]
-    zmax = 0.0 # sparams.init_dist_max[2]
-    zmin = 0.0 # sparams.init_dist_min[2]
+    xmax = sparams.sim_box_max[0]
+    xmin = sparams.sim_box_min[0]
+    ymax = sparams.sim_box_max[1]
+    ymin = sparams.sim_box_min[1]
+    zmax = sparams.sim_box_max[2]
+    zmin = sparams.sim_box_min[2]
 
-    z = zmin
-    while  z <= zmax:
-        y = ymin
-        while y <= ymax:
-            x = xmin
-            while x <= xmax:
-                p = Particle()
-                # print "%.2f, %.2f, %.2f" % (x,y,z) # jjj
-                p.r[0] = x
-                p.r[1] = y
-                p.r[2] = z
-                p.r[0] += -0.05 + random.random()*0.1
-                p.r[1] += -0.05 + random.random()*0.1
-                p.r[2] += -0.05 + random.random()*0.1
-                p.v[0] = p.v[1] = p.v[2] = 0.0
-                particles.append(p)
-                x += d
-            y += d
-        z += d
-        print "num of particles: ", len(particles)
+    for i in range(3):
+        p = Particle()
+        p.r[0] = random.uniform(xmin, xmax)
+        p.r[1] = random.uniform(ymin, ymax)
+        p.r[2] = random.uniform(zmin, zmax)
+        p.v[0] = p.v[1] = p.v[2] = 0.0
+        print "DEBUG: %.2f, %.2f, %.2f" % (p.r[0], p.r[1], p.r[2])
+        particles.append(p)
+
+    print "num of particles: ", len(particles)
 
     # calculate h9
     h = sparams.effective_radius
@@ -237,7 +227,7 @@ def __calculate_rho_p():
 def calculate_force():
     global particles
 
-    ieps2 = 0.01
+    ieps2 = 1.0e-3
 
     for pi in particles:
         f_i=[0.,0.,0.]
@@ -271,65 +261,23 @@ def calculate_boundary_condition():
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
 
-    dump = 0.8
+    damp = 0.8
 
     for pi in particles:
         for k in range(3):
             diff = 2.0 * c_r - ( pi.r[k] - c_min[k] ) * c_scale
-            if  diff > c_eps : pi.v[k] = pi.v[k] * -dump
+            if diff > c_eps : pi.v[k] = pi.v[k] * -damp
             diff = 2.0 * c_r - ( c_max[k] - pi.r[k] ) * c_scale
-            if  diff > c_eps : pi.v[k] = pi.v[k] * -dump
+            if diff > c_eps : pi.v[k] = pi.v[k] * -damp
 
-'''
     for pi in particles:
-        # wall X
-        diff = 2.0 * c_r - ( pi.r[0] - c_min[0] ) * c_scale
-        if  diff > c_eps :          pi.v[0] = pi.v[0] * -1.0
+        for k in range(3):
+            v2 = ( pi.v[k] * pi.v[k])
+            if v2 > 1.0e4 :
+                print "DEBUG: v2, pi:", v2, pi, sparams.dt
+                pi.v[k] = pi.v[k] * 0.5
 
-        diff = 2.0 * c_r - ( c_max[0] - pi.r[0] ) * c_scale
-        if  diff > c_eps :          pi.v[0] = pi.v[0] * -1.0
 
-        # wall Y
-        diff = 2.0 * c_r - ( pi.r[1] - c_min[1] ) * c_scale
-        if diff > c_eps:            pi.v[1] = pi.v[1] * -1.0
-
-        diff = 2.0 * c_r - ( c_max[1] - pi.r[1] ) * c_scale
-        if diff > c_eps:            pi.v[1] = pi.v[1] * -1.0
-
-        # wall Z
-        diff = 2.0 * c_r - (pi.r[2] - c_min[2]) * c_scale
-        if diff > c_eps:            pi.v[2] = pi.v[2] * -1.0
-
-        diff = 2.0 * c_r - ( c_max[2] - pi.r[2] ) * c_scale
-        if diff > c_eps:            pi.v[2] = pi.v[2] * -1.0
-
-'''
-
-'''
-    for pi in particles:
-        acc = [ pi.f[k] * c_m for k in range(0,3) ]
-        acc2 = acc[0]*acc[0] + acc[1]*acc[1] + acc[2]*acc[2]
-        if acc2 > sparams.limit**2.: acc = [ acc[k] * sparams.limit / (acc2**0.5) for k in range(0,3) ]
-        # wall X
-        diff = 2.0 * c_r - ( pi.r[0] - c_min[0] ) * c_scale
-        if  diff > c_eps :          acc[0] += c_re * diff - c_da * pi.v[0]
-        diff = 2.0 * c_r - ( c_max[0] - pi.r[0] ) * c_scale
-        if diff > c_eps:            acc[0] -= c_re * diff + c_da * pi.v[0]
-        # wall Y
-        diff = 2.0 * c_r - ( pi.r[1] - c_min[1] ) * c_scale
-        if diff > c_eps:            acc[1] += c_re * diff - c_da * pi.v[1]
-        diff = 2.0 * c_r - ( c_max[1] - pi.r[1] ) * c_scale
-        if diff > c_eps:            acc[1] -= c_re * diff + c_da * pi.v[1]
-        # wall Z
-        diff = 2.0 * c_r - (pi.r[2] - c_min[2]) * c_scale
-        if diff > c_eps:            acc[2] += c_re * diff - c_da * pi.v[2]
-        diff = 2.0 * c_r - ( c_max[2] - pi.r[2] ) * c_scale
-        if diff > c_eps:            acc[2] -= c_re * diff + c_da * pi.v[2]
-
-        # gravitational force from the earth
-        acc = [ acc[k] + sparams.grav_const[k] for k in range(0,3) ]
-        pi.a += acc
-'''
 
 
 
