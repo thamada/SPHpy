@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # GRAVpy
-# Time-stamp: <2017-01-03 22:18:27 hamada>
+# Time-stamp: <2017-01-03 23:28:47 hamada>
 
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
@@ -35,7 +35,7 @@ help_msg = [
 
 
 class SPH_Parameters:
-    def __init__(self, grav_const = [0., -9.8, 0.], scale=0.004,
+    def __init__(self, grav_const = [0., -9.8, 0.], scale=1.00,
                  mass=0.00020543, pressure_coef=1.00,
                  boundary_damp = 256.0, boundary_repu = 10000.0,
                  boundary_eps  = 0.00001, boundary_radius = 0.004,
@@ -104,7 +104,7 @@ class Viewer:
 
 
 class Particle:
-    def __init__(self, gl_index=0, gl_color=vec4(1.,1.,1.,1.) , mass=0., r=[0., 0., 0.], v=[0., 0., 0.], a=[0., 0., 0.], f=[0., 0., 0.], rho=0, p=0, radii=0.001):
+    def __init__(self, gl_index=0, gl_color=vec4(1.,1.,1.,1.) , mass=1., r=[0., 0., 0.], v=[0., 0., 0.], a=[0., 0., 0.], f=[0., 0., 0.], rho=0, p=0, radii=0.001):
         self.gl_index = gl_index # index for OpenGL display list
         self.gl_color = gl_color
         self.m  = mass
@@ -204,9 +204,12 @@ def sph_init():
     sparams.h9 = h9
 
 
+def calculate_rho_p():
+    return 
+
 # density(rho) and pressure(p)
 #  using 6-th order polynominal Kernel
-def calculate_rho_p():
+def __calculate_rho_p():
     global particles
 
     m = sparams.mass # mass for each SPH particles
@@ -245,7 +248,7 @@ def calculate_force():
         for pj in particles:
             if pi.gl_index == pj.gl_index: continue
             dr = [ (pj.r[k] - pi.r[k]) * sparams.scale for k in range(len(pi.r)) ]
-            r  = math.sqrt( dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2] + 0.031415926535897932)
+            r  = math.sqrt( dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2] + 0.00031415926535897932)
             r1i = 1.0/r
             r2i = r1i * r1i
             mr3i = pj.m * r1i * r2i
@@ -288,7 +291,7 @@ def calculate_boundary_condition():
         if diff > c_eps:            acc[2] -= c_re * diff + c_da * pi.v[2]
 
         # gravitational force from the earth
-        acc = [ acc[k] + sparams.grav_const[k] for k in range(0,3) ]
+#        acc = [ acc[k] + sparams.grav_const[k] for k in range(0,3) ]
         pi.a = acc
 
 
