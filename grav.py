@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # GRAVpy
-# Time-stamp: <2017-01-03 23:47:34 hamada>
+# Time-stamp: <2017-01-03 23:50:13 hamada>
 
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
@@ -162,14 +162,13 @@ def sph_init():
     # initial distance between SPH particles
     d  = ((sparams.mass / sparams.fluid_density)**(1/3.0))  # (meter)
     d = d * 0.87 / sparams.scale # scaled
-#    d = d * 3.5 / sparams.scale # scaled
 
-    xmax = sparams.init_dist_max[0]
-    xmin = sparams.init_dist_min[0]
-    ymax = sparams.init_dist_max[1]
-    ymin = sparams.init_dist_min[1]
-    zmax = sparams.init_dist_max[2]
-    zmin = sparams.init_dist_min[2]
+    xmax = 0.1 # sparams.init_dist_max[0]
+    xmin = 0.0 # sparams.init_dist_min[0]
+    ymax = 0.1 # sparams.init_dist_max[1]
+    ymin = 0.0 # sparams.init_dist_min[1]
+    zmax = 0.0 # sparams.init_dist_max[2]
+    zmin = 0.0 # sparams.init_dist_min[2]
 
     z = zmin
     while  z <= zmax:
