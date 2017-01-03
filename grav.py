@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # GRAVpy
-# Time-stamp: <2017-01-03 23:50:13 hamada>
+# Time-stamp: <2017-01-03 23:54:17 hamada>
 
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
@@ -241,6 +241,7 @@ def calculate_force():
 
     for pi in particles:
         f_i=[0.,0.,0.]
+        a_i=[0.,0.,0.]
         for pj in particles:
             if pi.gl_index == pj.gl_index: continue
             dr = [ (pj.r[k] - pi.r[k]) * sparams.scale for k in range(len(pi.r)) ]
@@ -248,11 +249,15 @@ def calculate_force():
             r1i = 1.0/r
             r2i = r1i * r1i
             mr3i = pj.m * r1i * r2i
-            f_i[0] += dr[0] * mr3i
-            f_i[1] += dr[1] * mr3i
-            f_i[2] += dr[2] * mr3i
+            a_i[0] += dr[0] * mr3i
+            a_i[1] += dr[1] * mr3i
+            a_i[2] += dr[2] * mr3i
+            f_i[0] += dr[0] * mr3i * pi.m
+            f_i[1] += dr[1] * mr3i * pi.m
+            f_i[2] += dr[2] * mr3i * pi.m
 
         pi.f = f_i
+        pi.a = a_i
 
 
 def calculate_boundary_condition():
@@ -287,7 +292,7 @@ def calculate_boundary_condition():
         if diff > c_eps:            acc[2] -= c_re * diff + c_da * pi.v[2]
 
         # gravitational force from the earth
-        acc = [ acc[k] + sparams.grav_const[k] for k in range(0,3) ]
+#        acc = [ acc[k] + sparams.grav_const[k] for k in range(0,3) ]
         pi.a = acc
 
 
