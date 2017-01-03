@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # GRAVpy
-# Time-stamp: <2017-01-03 23:54:17 hamada>
+# Time-stamp: <2017-01-04 00:15:30 hamada>
 
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
@@ -237,7 +237,7 @@ def __calculate_rho_p():
 def calculate_force():
     global particles
 
-    ieps2 = 0.0
+    ieps2 = 0.01
 
     for pi in particles:
         f_i=[0.,0.,0.]
@@ -293,7 +293,7 @@ def calculate_boundary_condition():
 
         # gravitational force from the earth
 #        acc = [ acc[k] + sparams.grav_const[k] for k in range(0,3) ]
-        pi.a = acc
+        pi.a += acc
 
 
 
