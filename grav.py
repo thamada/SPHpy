@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # GRAVpy
-# Time-stamp: <2017-01-04 00:26:03 hamada>
+# Time-stamp: <2017-01-04 00:47:45 hamada>
 
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
@@ -149,8 +149,8 @@ def sph_init():
     viewer.sphere_stack = 6
 
     # for Gaming Condition2
-    sparams.sim_box_min   = [ -5.0, -10.0,  -1.]
-    sparams.sim_box_max   = [  5.0,  10.0,   1.]
+    sparams.sim_box_min   = [ -5.0, -5.0,  -5.]
+    sparams.sim_box_max   = [  5.0,  5.0,   5.]
     sparams.viscosity = 0.1
     sparams.dt = 0.03
     sparams.limit=100.0
@@ -271,6 +271,16 @@ def calculate_boundary_condition():
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
 
+    dump = 0.8
+
+    for pi in particles:
+        for k in range(3):
+            diff = 2.0 * c_r - ( pi.r[k] - c_min[k] ) * c_scale
+            if  diff > c_eps : pi.v[k] = pi.v[k] * -dump
+            diff = 2.0 * c_r - ( c_max[k] - pi.r[k] ) * c_scale
+            if  diff > c_eps : pi.v[k] = pi.v[k] * -dump
+
+'''
     for pi in particles:
         # wall X
         diff = 2.0 * c_r - ( pi.r[0] - c_min[0] ) * c_scale
@@ -293,6 +303,7 @@ def calculate_boundary_condition():
         diff = 2.0 * c_r - ( c_max[2] - pi.r[2] ) * c_scale
         if diff > c_eps:            pi.v[2] = pi.v[2] * -1.0
 
+'''
 
 '''
     for pi in particles:
