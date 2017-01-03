@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # GRAVpy
-# Time-stamp: <2017-01-03 23:28:47 hamada>
+# Time-stamp: <2017-01-03 23:31:59 hamada>
 
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
@@ -237,18 +237,15 @@ def __calculate_rho_p():
 #   using Spiky Kernel
 def calculate_force():
     global particles
-    h  = sparams.effective_radius
-    h6 = sparams.h6
-    h6pi = h6 * math.pi
-    vvh = 45.0 / h6pi
-    cch = 0.5 * vvh
+
+    ieps2 = 0.0
 
     for pi in particles:
         f_i=[0.,0.,0.]
         for pj in particles:
             if pi.gl_index == pj.gl_index: continue
             dr = [ (pj.r[k] - pi.r[k]) * sparams.scale for k in range(len(pi.r)) ]
-            r  = math.sqrt( dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2] + 0.00031415926535897932)
+            r  = math.sqrt( dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2] + ieps2)
             r1i = 1.0/r
             r2i = r1i * r1i
             mr3i = pj.m * r1i * r2i
