@@ -1,6 +1,7 @@
 #!/usr/bin/env python
+# Time-stamp: <2017-01-04 04:57:40 hamada>
 # GRAVpy
-# Time-stamp: <2017-01-04 01:48:26 hamada>
+# Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
@@ -23,10 +24,10 @@ help_msg = [
 "r: shuffle particles",
 "e: wall(e) --",
 "E: wall(e) ++",
-"v: viscosity ++",
-"V: viscosity --",
+"v: decrease velocity",
+"V: increase velocity",
 "[Space]: increase particles",
-"-: reduce particles",
+"-: delete a particle",
 "1: for debug",
 "2: change 3D->2D",
 "q: quit",
@@ -35,36 +36,19 @@ help_msg = [
 
 
 class SPH_Parameters:
-    def __init__(self, grav_const = [0., -9.8, 0.], scale=1.00,
-                 mass=0.00020543, pressure_coef=1.00,
-                 boundary_damp = 256.0, boundary_repu = 10000.0,
+    def __init__(self, grav_const = [0., -9.8, 0.], scale = 1.00,
                  boundary_eps  = 0.00001, boundary_radius = 0.004,
-                 fluid_density = 600.0, effective_radius=0.01, h9 = 0.0, h2 = 0.0, h6 = 0.0,
                  sim_box_min = [-10., -10.0, -10.0],
                  sim_box_max = [ 10.,  10.0,  10.0],
-                 init_dist_min = [ 4.5,  4.5,  4.5],
-                 init_dist_max = [ 5.5,  5.5,  5.5],
-                 viscosity=0.2, limit=200., dt=0.004):
-        self.viscosity = viscosity #  (Pa.s) = 1 kg m^-1 s^-1
+                 limit=200., dt=0.004):
         self.limit = limit         #  velocity limitation at boundary condition
         self.dt    = dt            #  delta time for each time-stemps (shared time-step scheme)
         self.grav_const = grav_const
         self.scale = scale         # multiples x,y,z by this value
-        self.boundary_damp    = boundary_damp   # constant of damping for boundary rebounding
-        self.boundary_repu    = boundary_repu   # constant of repulsion for boundary rebounding
         self.boundary_eps     = boundary_eps    # constant for boundary rebounding
         self.boundary_radius  = boundary_radius # constant for boundary rebounding (meter)
-        self.mass = mass # mass for each SPH particles (kg)
-        self.fluid_density = fluid_density # all of SPH particles are moving to keep this density (kg / m^3)
-        self.effective_radius  = effective_radius
-        self.h2 = h2 # effective_radius ^ 2 : after init, you need to calculate by yourself
-        self.h6 = h6 # effective_radius ^ 6 : after init, you need to calculate by yourself
-        self.h9 = h9 # effective_radius ^ 9 : after init, you need to calculate by yourself
-        self.pressure_coef = pressure_coef # coefficient for pressure
         self.sim_box_min = sim_box_min # simulation box size
         self.sim_box_max = sim_box_max # simulation box size
-        self.init_dist_min = init_dist_min # initial distribution size
-        self.init_dist_max = init_dist_max # initial distribution size
 
 class Viewer:
     def __init__(self,
@@ -99,12 +83,9 @@ class Viewer:
         g  = (gx * gx + gy * gy)**0.5
         sphsim.grav_const[0] = -g * math.sin(2.*math.pi* z /360.)
         sphsim.grav_const[1] = -g * math.cos(2.*math.pi* z /360.)
-#        print "grav_const: ", sphsim.grav_const
-#        print "view_rot: ", self.view_rot
-
 
 class Particle:
-    def __init__(self, gl_index=0, gl_color=vec4(1.,1.,1.,1.) , mass=1., r=[0., 0., 0.], v=[0., 0., 0.], a=[0., 0., 0.], f=[0., 0., 0.], rho=0, p=0, radii=0.001):
+    def __init__(self, gl_index=0, gl_color=vec4(1.,1.,1.,1.) , mass=1., r=[0., 0., 0.], v=[0., 0., 0.], a=[0., 0., 0.], f=[0., 0., 0.], radii=0.005):
         self.gl_index = gl_index # index for OpenGL display list
         self.gl_color = gl_color
         self.m  = mass
@@ -112,7 +93,6 @@ class Particle:
         self.v = [v[i] for i in range (0, 3)]
         self.a = [a[i] for i in range (0, 3)]
         self.f = [f[i] for i in range (0, 3)]
-        self.p = p
         self.radii = radii
 
 
@@ -126,31 +106,18 @@ def nbody_init():
     #---------------------------------------------------------
     sparams.sim_box_min   = [ -6.0, -10.0,  -1.5]
     sparams.sim_box_max   = [  6.0,  10.0,   1.5]
-    sparams.init_dist_min = [ -5.5, -0.5, -0.5]
-    sparams.init_dist_max = [ -1.5,  9.5,  0.5]
     sparams.scale = 0.01
-    sparams.viscosity = 0.1 # pascal-second (Pa.s) = 1 kg m^-1 s^-1
     sparams.dt = 0.004 * 2.0
     sparams.boundary_eps = 4.37893890381e-3
-
-    # initial distance between SPH particles
-    d = ((sparams.mass / sparams.fluid_density)**(1/3.0)) # (meter)
-    d = d * 0.87 / sparams.scale # scaled
 
     # for Gaming Condition
     sparams.sim_box_min   = [ -8.0, -8.0,  -8.]
     sparams.sim_box_max   = [  8.0,  8.0,   8.]
-    sparams.viscosity = 0.1
     sparams.dt = 0.006
     sparams.limit = 100.0
-    sparams.boundary_damp = 256.0/ 200.
     viewer.sphere_radius_coef = 144.0
-    viewer.sphere_slic = 6
-    viewer.sphere_stack = 6
-
-    # initial distance between SPH particles
-    d  = ((sparams.mass / sparams.fluid_density)**(1/3.0))  # (meter)
-    d = d * 0.87 / sparams.scale # scaled
+    viewer.sphere_slic = 16
+    viewer.sphere_stack = 16
 
     xmax = sparams.sim_box_max[0]
     xmin = sparams.sim_box_min[0]
@@ -159,7 +126,7 @@ def nbody_init():
     zmax = sparams.sim_box_max[2]
     zmin = sparams.sim_box_min[2]
 
-    for i in range(3):
+    for i in range(8):
         p = Particle()
         p.r[0] = random.uniform(xmin, xmax)
         p.r[1] = random.uniform(ymin, ymax)
@@ -170,87 +137,49 @@ def nbody_init():
 
     print "num of particles: ", len(particles)
 
-    # calculate h9
-    h = sparams.effective_radius
-    h2 = h * h
-    h4 = h2 * h2
-    h6 = h4 * h2
-    h8 = h4 * h4
-    h9 = h8 * h
-    sparams.h2 = h2
-    sparams.h6 = h6
-    sparams.h9 = h9
 
-
-def calculate_rho_p():
-    return 
-
-# density(rho) and pressure(p)
-#  using 6-th order polynominal Kernel
-def __calculate_rho_p():
-    global particles
-
-    m = sparams.mass # mass for each SPH particles
-    h =  sparams.effective_radius
-    h2 = sparams.h2
-    h9 = sparams.h9
-
-    for pi in particles:
-        sum = 0.0
-        for pj in particles:
-            if pi.gl_index == pj.gl_index: continue
-            dr = [ (pi.r[k] - pj.r[k]) * sparams.scale for k in range(len(pi.r)) ]
-            r2 =  dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2]
-            if h2  > r2 :
-                c = h2 - r2
-                sum += c * c * c
-
-        pi.rho = sum * m * 315.0 / ( 64.0 * math.pi * h9 )                # density
-        pi.p   = (pi.rho - sparams.fluid_density) * sparams.pressure_coef # pressure
-        if pi.rho < 1e-8:  pi.rho = 1e-8
-        pi.rho = 1.0 / pi.rho
-
-
-# calclate force
-#   using Spiky Kernel
 def calculate_force():
     global particles
 
     ieps2 = 1.0e-3
 
     for pi in particles:
-        f_i=[0.,0.,0.]
-        a_i=[0.,0.,0.]
-        for pj in particles:
-            if pi.gl_index == pj.gl_index: continue
+        pi.a = [0., 0., 0.]
+
+    npar = len(particles)
+
+    for i in range(npar):
+        pi = particles[i]
+        for j in range(i+1, npar):
+            pj = particles[j]
             dr = [ (pj.r[k] - pi.r[k]) * sparams.scale for k in range(len(pi.r)) ]
             r  = math.sqrt( dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2] + ieps2)
             r1i = 1.0/r
             r2i = r1i * r1i
-            mr3i = pj.m * r1i * r2i
-            a_i[0] += dr[0] * mr3i
-            a_i[1] += dr[1] * mr3i
-            a_i[2] += dr[2] * mr3i
-            f_i[0] += dr[0] * mr3i * pi.m
-            f_i[1] += dr[1] * mr3i * pi.m
-            f_i[2] += dr[2] * mr3i * pi.m
+            r3i = r1i * r2i
+            dr3 = [dr[0]*r3i, dr[1]*r3i, dr[2]*r3i] 
+            # --- i-th particle  ---
+            pi.a[0] += dr3[0] * pj.m
+            pi.a[1] += dr3[1] * pj.m
+            pi.a[2] += dr3[2] * pj.m
+            # --- j-th particle  ---
+            pj.a[0] -= dr3[0] * pi.m
+            pj.a[1] -= dr3[1] * pi.m
+            pj.a[2] -= dr3[2] * pi.m
 
-        pi.f = f_i
-        pi.a = a_i
+
+#    for p in particles: print p.gl_index, p.a
 
 
 def calculate_boundary_condition():
     global particles
     c_scale = sparams.scale
-    c_da  = sparams.boundary_damp
-    c_re  = sparams.boundary_repu
     c_eps = sparams.boundary_eps
     c_r   = sparams.boundary_radius
-    c_m   = sparams.mass
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
 
-    damp = 0.8
+    damp = 0.999
 
     for pi in particles:
         for k in range(3):
@@ -262,8 +191,8 @@ def calculate_boundary_condition():
     for pi in particles:
         for k in range(3):
             v2 = ( pi.v[k] * pi.v[k])
-            if v2 > 1.0e4 :
-                print "DEBUG: v2, pi:", v2, pi, sparams.dt
+            if v2 > 1.0e8 :
+                print "DEBUG: v2, pi:", v2, pi.v, sparams.dt
                 pi.v[k] = pi.v[k] * 0.5
 
 
@@ -282,18 +211,18 @@ def time_integration_LeapFrog2ndOrder():
 
     dt = sparams.dt
 
-    if True == is_first_integral:
-        calculate_rho_p()
+    if is_first_integral is True:
         calculate_force()
         calculate_boundary_condition()
         is_first_integral = False
 
     for pi in particles:
+        if viewer.is_3D is not True:
+            pi.r[2] = 0.0
+            pi.v[2] = 0.0
         pi.v = [ pi.v[k] + pi.a[k] * dt * 0.5 for k in range(0,3) ]
         pi.r = [ pi.r[k] + pi.v[k] * dt for k in range(0,3) ]
-        if viewer.is_3D is not True:  pi.r[2] = 0.0
 
-    calculate_rho_p()
     calculate_force()
     calculate_boundary_condition()
 
@@ -310,14 +239,15 @@ def time_integration_Euler1stOrder():
 
     dt = sparams.dt
 
-    calculate_rho_p()
     calculate_force()
     calculate_boundary_condition()
 
     for pi in particles:
+        if viewer.is_3D is not True:
+            pi.r[2] = 0.0
+            pi.v[2] = 0.0
         pi.v = [ pi.v[k] + pi.a[k] * dt for k in range(0,3) ]
         pi.r = [ pi.r[k] + pi.v[k] * dt for k in range(0,3) ]
-        if viewer.is_3D is not True:  pi.r[2] = 0.0
 
     viewer.sim_time += dt
     viewer.sim_step += 1
@@ -332,14 +262,14 @@ def  _glutSolidSphere(radius):
         glutSolidSphere(radius*viewer.sphere_radius_coef, viewer.sphere_slic, viewer.sphere_stack)
 
 def add_particle():
-    global particles
+    global particles, viewer
     r_max = viewer.r_max
     v_max = viewer.v_max
     p = Particle()
     p.r[0] = (0.5 - random.random()) * r_max / 8.
     p.r[1] = 4.95 #(0.5 - random.random()) * r_max / 8.
     p.r[2] = (0.5 - random.random()) * r_max / 8.
-    for k in range(0,3):  p.v[k] = (0.5 - random.random()) * v_max
+    for k in range(0,3):  p.v[k] = (0.5 - random.uniform(0.0, v_max))*100.0
     p.a[0] = p.a[1] = p.a[2] = 0.
     p.gl_color  = vec4(random.random(), random.random(), random.random(), 0.0)
     p.gl_index = glGenLists(1)
@@ -389,12 +319,15 @@ def draw_text_left_top():
     global particles
 
     text_list = [ ]
+    if viewer.is_3D: 
+        text_list.append( "simulation mode: 3D" )
+    else:
+        text_list.append( "simulation mode: 2D" )
     text_list.append( "simulation time : %f" % viewer.sim_time )
     text_list.append( "simulation steps: %d" % viewer.sim_step )
     text_list.append( "FPS:       %f" % viewer.fps_calc )
     text_list.append( "FPS(Phys): %f" % viewer.fps_phys )
     text_list.append( "# of particles: %d" % len(particles) )
-    text_list.append( "viscosity: %.1e" % sparams.viscosity )
     text_list.append( "wall(e): %.2f" % (9.85e-3 / sparams.boundary_eps ) )
     text_list.append( "dt: %.2e" % sparams.dt)
     text_list.append( "number of particles: %d" % len(particles))
@@ -531,10 +464,21 @@ def idle():
     glutPostRedisplay()
 
 
-def adj_grav():
-    global viewer
-    global sparams
-    viewer.adj_grav(sparams)
+
+def decrease_velocity():
+    global particles
+    print "decreasing velocity"
+
+    for p in particles:
+        for k in range(3): p.v[k] = p.v[k] * 0.9
+
+def increase_velocity():
+    global particles
+    print "increasing velocity"
+
+    for p in particles:
+        for k in range(3): p.v[k] = p.v[k] * 1.1
+
 
 # change view angle, exit upon ESC
 def key(k, x, y):
@@ -579,12 +523,9 @@ def key(k, x, y):
             print "2D -> 3D"
             viewer.is_3D = True
     elif k == 'v':
-        sparams.viscosity += 0.005
-        print "sparams.viscosity: ", sparams.viscosity
+        decrease_velocity()
     elif k == 'V':
-        sparams.viscosity -= 0.005
-        if sparams.viscosity < 0. : sparams.viscosity = 1e-4
-        print "sparams.viscosity: ", sparams.viscosity
+        increase_velocity()
     elif k == '9':
         viewer.sphere_radius_coef *= 1.2
         print "sphere_radius_coef:", viewer.sphere_radius_coef
@@ -598,13 +539,13 @@ def key(k, x, y):
     else:
         return
 
-    adj_grav()
+    viewer.adj_grav(sparams)
     glutPostRedisplay()
 
 
 # change view angle
 def special(k, x, y):
-    global viewer
+    global viewer, sparams
 
     if k == GLUT_KEY_UP:
         viewer.view_rot[0] += 5.0
@@ -616,7 +557,8 @@ def special(k, x, y):
         viewer.view_rot[1] -= 5.0
     else:
         return
-    adj_grav()
+
+    viewer.adj_grav(sparams)
     glutPostRedisplay()
 
 def mouse(button, state, x, y):
@@ -647,7 +589,8 @@ def mouse(button, state, x, y):
         return
 
 def motion(x, y):
-    global viewer
+    global viewer, sparams
+
     print "motion: ", x, y, viewer.trans
     if viewer.mouse_l == 1 :
         speed = 1.2
@@ -660,7 +603,8 @@ def motion(x, y):
 
     if viewer.mouse_l ==1 or viewer.mouse_m == 1 or viewer.mouse_r == 1:
         glutPostRedisplay()
-    adj_grav()
+
+    viewer.adj_grav(sparams)
 
 # new window size or exposure
 def reshape(width, height):
@@ -685,11 +629,11 @@ def init():
     blue  = vec4(0.2, 0.2, 1.0, 1.0)
 
     glLightfv(GL_LIGHT0, GL_AMBIENT, vec4(0.5, 0.1,  -0.1, 0.1))
-    glLightfv(GL_LIGHT1, GL_AMBIENT, vec4(0.5, 0.1,  1.0,  0.1))
+#    glLightfv(GL_LIGHT1, GL_AMBIENT, vec4(0.5, 0.1,  1.0,  0.1))
     glEnable(GL_CULL_FACE)
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0)
-    glEnable(GL_LIGHT1)
+#    glEnable(GL_LIGHT1)
     glEnable(GL_DEPTH_TEST)
 
     nbody_init()
@@ -707,7 +651,7 @@ def init():
 
 
 def visible(vis):
-    if vis == GLUT_VISIBLE:
+    if GLUT_VISIBLE == vis:
         glutIdleFunc(idle)
 
 
