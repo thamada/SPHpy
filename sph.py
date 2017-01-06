@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # SPHpy
-# Time-stamp: <2017-01-04 01:50:55 hamada>
+# Time-stamp: <2017-01-07 08:29:54 hamada>
+import os
+import logging as LG
 
 import OpenGL 
 OpenGL.ERROR_ON_COPY = True 

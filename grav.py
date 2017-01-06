@@ -1,8 +1,10 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-04 04:57:40 hamada>
+# Time-stamp: <2017-01-07 08:39:03 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 
+import os
+import logging as LG
 import OpenGL
 OpenGL.ERROR_ON_COPY = True
 from OpenGL.GL import *
@@ -10,6 +12,30 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from OpenGL.constants import GLfloat
 import sys, time, math, random
+
+# create logger
+logger = LG.getLogger(os.path.basename(__file__))
+logger.setLevel(LG.DEBUG)
+
+# create console handler and set level to debug
+ch = LG.StreamHandler()
+ch.setLevel(LG.DEBUG)
+
+# create formatter
+formatter = LG.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+
+## logger.debug('debug message')
+## logger.info('info message')
+## logger.warn('warn message')
+## logger.error('error message')
+## logger.critical('critical message')
+
 
 vec4 = GLfloat_4
 particles = [ ]
@@ -132,10 +158,10 @@ def nbody_init():
         p.r[1] = random.uniform(ymin, ymax)
         p.r[2] = random.uniform(zmin, zmax)
         p.v[0] = p.v[1] = p.v[2] = 0.0
-        print "DEBUG: %.2f, %.2f, %.2f" % (p.r[0], p.r[1], p.r[2])
+        logger.debug("%.2f, %.2f, %.2f" % (p.r[0], p.r[1], p.r[2]))
         particles.append(p)
 
-    print "num of particles: ", len(particles)
+    logger.debug("# of particles: %d", len(particles))
 
 
 def calculate_force():
@@ -467,14 +493,14 @@ def idle():
 
 def decrease_velocity():
     global particles
-    print "decreasing velocity"
+    logger.info("decreasing velocity")
 
     for p in particles:
         for k in range(3): p.v[k] = p.v[k] * 0.9
 
 def increase_velocity():
     global particles
-    print "increasing velocity"
+    logger.info("increasing velocity")
 
     for p in particles:
         for k in range(3): p.v[k] = p.v[k] * 1.1
@@ -488,10 +514,10 @@ def key(k, x, y):
         viewer.view_rot[2] += 5.0
     elif k == 't':  # cahnge the box size
         sparams.dt *= 0.8
-        print sparams.dt
+        logger.info(sparams.dt)
     elif k == 'T':  # cahnge the box size
         sparams.dt += 0.0001
-        print sparams.dt
+        logger.info(sparams.dt)
     elif k == 'j':
         viewer.view_rot[2] -= 5.0
     elif k == 'J':  # cahnge the box size
@@ -504,14 +530,16 @@ def key(k, x, y):
         reset_pos_vel_acc()
     elif k == 'e':
         sparams.boundary_eps *= 1.5
+        logger.info(sparams.boundary_eps)
     elif k == 'E':
         sparams.boundary_eps /= 1.5
-        print sparams.boundary_eps
+        logger.info(sparams.boundary_eps)
     elif k == ' ':
         add_particle()
     elif k == '-':
         del_particle()
     elif k == '1':
+#        logger.info(particles[0].r, particles[0].v, particles[0].f)
         print particles[0].r, particles[0].v, particles[0].f
     elif k == 'h':
         for s in help_msg: print s
@@ -673,9 +701,9 @@ if __name__ == '__main__':
     glutVisibilityFunc(visible)
 
     if "--info" in sys.argv:
-        print "GL_RENDERER   = ", glGetString(GL_RENDERER)
-        print "GL_VERSION    = ", glGetString(GL_VERSION)
-        print "GL_VENDOR     = ", glGetString(GL_VENDOR)
-        print "GL_EXTENSIONS = ", glGetString(GL_EXTENSIONS)
+        logger.info("GL_RENDERER   = ", glGetString(GL_RENDERER))
+        logger.info("GL_VERSION    = ", glGetString(GL_VERSION))
+        logger.info("GL_VENDOR     = ", glGetString(GL_VENDOR))
+        logger.info("GL_EXTENSIONS = ", glGetString(GL_EXTENSIONS))
 
     glutMainLoop()
