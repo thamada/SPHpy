@@ -1,7 +1,7 @@
-#!Time-stamp: <2017-01-08 01:21:55 hamada>
+Time-stamp: <2017-01-08 01:22:58 hamada>
 
 # SPHpy:
-Smoothed Particle Hydrodynamics written in python.
+Smoothed Particle Hydrodynamics simulation written in python.
 
 ## Requirements
 
