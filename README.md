@@ -1,15 +1,36 @@
-#!Time-stamp: <2016-12-29 02:37:51 hamada>
+#!Time-stamp: <2017-01-08 01:13:48 hamada>
 
 # SPHpy:
 Smoothed Particle Hydrodynamics written in python.
 
----
 ## Requirements
 
 - python 2.7.x
 - pyOpenGL
 
----
+
+## Applications
+
+- sph.py : SPHpy itself for Smoothed Particle Hydrodynamics written in python.
+- grav.py : another app for gravitational N-body simulation written in python.
+- ogl-check.py : pyOpenGL example for checking your system works fine or not.
+
+
+## Usage 
+
+```python:sphy.py
+ubuntu:~/SPHpy$ ./sph.py [ENTER]
+```
+
+```python:grav.py
+ubuntu:~/SPHpy$ ./grav.py [ENTER]
+```
+
+```python:ocl-check.py
+ubuntu:~/SPHpy$ ./ocl-check.py [ENTER]
+```
+
+
 ## Keybind
 
 - k: rotate simulation box
