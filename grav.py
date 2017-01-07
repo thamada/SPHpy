@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-08 02:58:29 hamada>
+# Time-stamp: <2017-01-08 04:12:34 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 
@@ -51,6 +51,8 @@ help_msg = [
 "r: shuffle particles",
 "e: wall(e) --",
 "E: wall(e) ++",
+"o: Sphere size --",
+"O: Sphere size ++",
 "v: decrease velocity",
 "V: increase velocity",
 "[Space]: increase particles",
@@ -62,15 +64,14 @@ help_msg = [
 ]
 
 
-class SPH_Parameters:
-    def __init__(self, grav_const = [0., -9.8, 0.], scale = 1.00,
+class Simulation_Parameters:
+    def __init__(self, scale = 1.00,
                  boundary_eps  = 0.00001, boundary_radius = 0.004,
                  sim_box_min = [-10., -10.0, -10.0],
                  sim_box_max = [ 10.,  10.0,  10.0],
                  limit=200., dt=0.004):
         self.limit = limit         #  velocity limitation at boundary condition
         self.dt    = dt            #  delta time for each time-stemps (shared time-step scheme)
-        self.grav_const = grav_const
         self.scale = scale         # multiples x,y,z by this value
         self.boundary_eps     = boundary_eps    # constant for boundary rebounding
         self.boundary_radius  = boundary_radius # constant for boundary rebounding (meter)
@@ -98,16 +99,8 @@ class Viewer:
         self.sphere_slic = sphere_slic
         self.sphere_stack = sphere_stack
 
-    def adj_grav(self, sphsim):
-        z = self.view_rot[2]
-        gx = sphsim.grav_const[0]
-        gy = sphsim.grav_const[1]
-        g  = (gx * gx + gy * gy)**0.5
-        sphsim.grav_const[0] = -g * math.sin(2.*math.pi* z /360.)
-        sphsim.grav_const[1] = -g * math.cos(2.*math.pi* z /360.)
-
 class Particle:
-    def __init__(self, gl_index=0, gl_color=vec4(1.,1.,1.,1.) , mass=1., r=[0., 0., 0.], v=[0., 0., 0.], a=[0., 0., 0.], f=[0., 0., 0.], radii=0.005):
+    def __init__(self, gl_index=0, gl_color=vec4(1.,1.,1.,1.) , mass=1., r=[0., 0., 0.], v=[0., 0., 0.], a=[0., 0., 0.], f=[0., 0., 0.], radii=0.002):
         self.gl_index = gl_index # index for OpenGL display list
         self.gl_color = gl_color
         self.m  = mass
@@ -119,14 +112,14 @@ class Particle:
 
 
 viewer = Viewer()
-sparams = SPH_Parameters()
+sparams = Simulation_Parameters()
 
 
 def nbody_init():
     global particles, sparams, viewer
 
-    sparams.sim_box_min   = [ -8.0, -8.0,  -8.]
-    sparams.sim_box_max   = [  8.0,  8.0,   8.]
+    sparams.sim_box_min   = [ -7.0, -7.0,  -7.0]
+    sparams.sim_box_max   = [  7.0,  7.0,   7.0]
     sparams.scale = 0.01
     sparams.boundary_eps = 4.37893890381e-3
     sparams.dt = 0.003
@@ -204,10 +197,6 @@ def calculate_boundary_condition():
             if v2 > 1.0e8 :
                 print "DEBUG: v2, pi:", v2, pi.v, sparams.dt
                 pi.v[k] = pi.v[k] * 0.5
-
-
-
-
 
 
 def time_integration():
@@ -436,7 +425,9 @@ def draw():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    gluLookAt(0., 3., 50.+viewer.trans[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
+    gluLookAt(0.0, 15.0, -0.5*viewer.trans[2]-30., # position of camera
+              0.0,  0.0, 0.0,                  # position of center
+              0.0,  1.0, 0.0)                  # direction of Up
     glPushMatrix()
     glRotatef(viewer.view_rot[0], 1.0, 0.0, 0.0)
     glRotatef(viewer.view_rot[1], 0.0, 1.0, 0.0)
@@ -447,6 +438,7 @@ def draw():
         glPushMatrix()
         glTranslatef(p.r[0], p.r[1], p.r[2])
         glCallList(p.gl_index)
+        _glutSolidSphere(p.radii)
         glPopMatrix()
 
     draw_box()
@@ -480,18 +472,24 @@ def increase_velocity():
 
 # change view angle, exit upon ESC
 def key(k, x, y):
-    global viewer, sparams
+    global viewer, sparams, particles
 
     if k == 'k':
         viewer.view_rot[2] += 5.0
+    elif k == 'j':
+        viewer.view_rot[2] -= 5.0
+
+    elif k == 'i':
+        viewer.view_rot[0] -= 5.0
+    elif k == 'u':
+        viewer.view_rot[0] += 5.0
+
     elif k == 't':  # cahnge the box size
         sparams.dt *= 0.8
         logger.info(sparams.dt)
     elif k == 'T':  # cahnge the box size
         sparams.dt += 0.0001
         logger.info(sparams.dt)
-    elif k == 'j':
-        viewer.view_rot[2] -= 5.0
     elif k == 'J':  # cahnge the box size
         sparams.sim_box_min   = [ sparams.sim_box_min[k] / 1.3 for k in  range(3)]
         sparams.sim_box_max   = [ sparams.sim_box_max[k] / 1.3 for k in  range(3)]
@@ -506,13 +504,23 @@ def key(k, x, y):
     elif k == 'E':
         sparams.boundary_eps /= 1.5
         logger.info(sparams.boundary_eps)
+
+    elif k == 'o':
+        for p in particles:
+            if 0.0 < p.radii: p.radii -= 1e-4
+        logger.info(particles[0].radii)
+
+    elif k == 'O':
+        for p in particles:
+            if 10.0 > p.radii: p.radii += 1e-4
+        logger.info(particles[0].radii)
+
     elif k == ' ':
         add_particle()
     elif k == '-':
         del_particle()
     elif k == '1':
-#        logger.info(particles[0].r, particles[0].v, particles[0].f)
-        print particles[0].r, particles[0].v, particles[0].f
+        logger.info("r,v,a:\n\t%s\n\t%s\n\t%s" % (particles[0].r,particles[0].v,particles[0].a))
     elif k == 'h':
         for s in help_msg: print s
     elif k == '2':
@@ -539,7 +547,6 @@ def key(k, x, y):
     else:
         return
 
-    viewer.adj_grav(sparams)
     glutPostRedisplay()
 
 
@@ -558,7 +565,6 @@ def special(k, x, y):
     else:
         return
 
-    viewer.adj_grav(sparams)
     glutPostRedisplay()
 
 def mouse(button, state, x, y):
@@ -603,8 +609,6 @@ def motion(x, y):
 
     if viewer.mouse_l ==1 or viewer.mouse_m == 1 or viewer.mouse_r == 1:
         glutPostRedisplay()
-
-    viewer.adj_grav(sparams)
 
 
 def reshape(width, height):
