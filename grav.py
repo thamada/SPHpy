@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-07 08:39:03 hamada>
+# Time-stamp: <2017-01-08 01:43:16 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 
@@ -13,28 +13,29 @@ from OpenGL.GLUT import *
 from OpenGL.constants import GLfloat
 import sys, time, math, random
 
-# create logger
-logger = LG.getLogger(os.path.basename(__file__))
-logger.setLevel(LG.DEBUG)
+def create_logger():
+    # create logger
+    _logger = LG.getLogger(os.path.basename(__file__))
+    _logger.setLevel(LG.DEBUG)
+    # create console handler and set level to debug
+    ch = LG.StreamHandler()
+    ch.setLevel(LG.DEBUG)
+    # create formatter
+    formatter = LG.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    # add formatter to ch
+    ch.setFormatter(formatter)
+    # add ch to logger
+    _logger.addHandler(ch)
+    return _logger
 
-# create console handler and set level to debug
-ch = LG.StreamHandler()
-ch.setLevel(LG.DEBUG)
-
-# create formatter
-formatter = LG.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-# add formatter to ch
-ch.setFormatter(formatter)
-
-# add ch to logger
-logger.addHandler(ch)
+logger = create_logger()
 
 ## logger.debug('debug message')
 ## logger.info('info message')
 ## logger.warn('warn message')
 ## logger.error('error message')
 ## logger.critical('critical message')
+
 
 
 vec4 = GLfloat_4
