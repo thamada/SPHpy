@@ -1,4 +1,4 @@
-#!Time-stamp: <2017-01-08 01:13:48 hamada>
+#!Time-stamp: <2017-01-08 01:20:44 hamada>
 
 # SPHpy:
 Smoothed Particle Hydrodynamics written in python.
@@ -11,8 +11,8 @@ Smoothed Particle Hydrodynamics written in python.
 
 ## Applications
 
-- sph.py : SPHpy itself for Smoothed Particle Hydrodynamics written in python.
-- grav.py : another app for gravitational N-body simulation written in python.
+- sph.py : SPHpy itself for Smoothed Particle Hydrodynamics simulation written in python.
+- grav.py : gravitational N-body simulation written in python.
 - ogl-check.py : pyOpenGL example for checking your system works fine or not.
 
 
@@ -29,6 +29,10 @@ ubuntu:~/SPHpy$ ./grav.py [ENTER]
 ```python:ocl-check.py
 ubuntu:~/SPHpy$ ./ocl-check.py [ENTER]
 ```
+
+## Target users
+
+me ^_^;,  and absolutery not for N-body/SPH experts
 
 
 ## Keybind
