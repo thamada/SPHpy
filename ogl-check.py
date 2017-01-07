@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-#Time-stamp: <2017-01-07 08:24:22 hamada>
+#Time-stamp: <2017-01-08 01:06:40 hamada>
 import sys
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -9,22 +9,22 @@ from OpenGL.GLUT import *
 import os
 import logging as LG
 
-# create logger
-logger = LG.getLogger(os.path.basename(__file__))
-logger.setLevel(LG.DEBUG)
+def create_logger():
+    # create logger
+    _logger = LG.getLogger(os.path.basename(__file__))
+    _logger.setLevel(LG.DEBUG)
+    # create console handler and set level to debug
+    ch = LG.StreamHandler()
+    ch.setLevel(LG.DEBUG)
+    # create formatter
+    formatter = LG.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    # add formatter to ch
+    ch.setFormatter(formatter)
+    # add ch to logger
+    _logger.addHandler(ch)
+    return _logger
 
-# create console handler and set level to debug
-ch = LG.StreamHandler()
-ch.setLevel(LG.DEBUG)
-
-# create formatter
-formatter = LG.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-# add formatter to ch
-ch.setFormatter(formatter)
-
-# add ch to logger
-logger.addHandler(ch)
+logger = create_logger()
 
 init_flag = 0
 
