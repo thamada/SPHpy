@@ -1,11 +1,9 @@
 #!/usr/bin/env python2
-#Time-stamp: <2017-01-08 01:06:40 hamada>
+#Time-stamp: <2017-01-08 02:27:52 hamada>
 import sys
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-#import pyglut
-#import pygame
 import os
 import logging as LG
 

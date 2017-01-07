@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-08 02:03:09 hamada>
+# Time-stamp: <2017-01-08 02:58:29 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 
@@ -79,9 +79,7 @@ class SPH_Parameters:
 
 class Viewer:
     def __init__(self,
-                 is_3D=True, mouse_l=0, mouse_m=0, mouse_r=0,
-                 view_rot=[0., 180., 0.],
-                 r_max = 20., v_max=1., radius_max=0.001,
+                 is_3D=True, mouse_l=0, mouse_m=0, mouse_r=0, view_rot=[0., 180., 0.],
                  fps_calc = 0., fps_phys=0., sim_step=0, sim_time=0.,
                  sphere_radius_coef = 300, sphere_slic = 32, sphere_stack = 32,
                  mpos = [0,0], trans = [0., 1.4, -14.]):
@@ -90,9 +88,6 @@ class Viewer:
         self.mouse_m = mouse_m
         self.mouse_r = mouse_r
         self.view_rot = [view_rot[i] for i in range (0, 3)]
-        self.r_max = r_max
-        self.v_max = v_max
-        self.radius_max = radius_max
         self.mpos = [mpos[i] for i in range (0, 2)]
         self.trans = [trans[i] for i in range (0, 3)]
         self.fps_calc = fps_calc
@@ -130,17 +125,11 @@ sparams = SPH_Parameters()
 def nbody_init():
     global particles, sparams, viewer
 
-    #---------------------------------------------------------
-    sparams.sim_box_min   = [ -6.0, -10.0,  -1.5]
-    sparams.sim_box_max   = [  6.0,  10.0,   1.5]
-    sparams.scale = 0.01
-    sparams.dt = 0.004 * 2.0
-    sparams.boundary_eps = 4.37893890381e-3
-
-    # for Gaming Condition
     sparams.sim_box_min   = [ -8.0, -8.0,  -8.]
     sparams.sim_box_max   = [  8.0,  8.0,   8.]
-    sparams.dt = 0.006
+    sparams.scale = 0.01
+    sparams.boundary_eps = 4.37893890381e-3
+    sparams.dt = 0.003
     sparams.limit = 100.0
     viewer.sphere_radius_coef = 144.0
     viewer.sphere_slic = 16
@@ -168,7 +157,7 @@ def nbody_init():
 def calculate_force():
     global particles
 
-    ieps2 = 1.0e-3
+    ieps2 = 1.0e-4
 
     for pi in particles:
         pi.a = [0., 0., 0.]
@@ -185,15 +174,9 @@ def calculate_force():
             r2i = r1i * r1i
             r3i = r1i * r2i
             dr3 = [dr[0]*r3i, dr[1]*r3i, dr[2]*r3i] 
-            # --- i-th particle  ---
-            pi.a[0] += dr3[0] * pj.m
-            pi.a[1] += dr3[1] * pj.m
-            pi.a[2] += dr3[2] * pj.m
-            # --- j-th particle  ---
-            pj.a[0] -= dr3[0] * pi.m
-            pj.a[1] -= dr3[1] * pi.m
-            pj.a[2] -= dr3[2] * pi.m
-
+            for dim in range(3):
+                pi.a[dim] += dr3[dim] * pj.m     # i-th particle
+                pj.a[dim] -= dr3[dim] * pi.m     # j-th particle
 
 #    for p in particles: print p.gl_index, p.a
 
@@ -290,14 +273,14 @@ def  _glutSolidSphere(radius):
 
 def add_particle():
     global particles, viewer
-    r_max = viewer.r_max
-    v_max = viewer.v_max
+    r_box = sparams.sim_box_max[0] - sparams.sim_box_min[0]
     p = Particle()
-    p.r[0] = (0.5 - random.random()) * r_max / 8.
-    p.r[1] = 4.95 #(0.5 - random.random()) * r_max / 8.
-    p.r[2] = (0.5 - random.random()) * r_max / 8.
-    for k in range(0,3):  p.v[k] = (0.5 - random.uniform(0.0, v_max))*100.0
-    p.a[0] = p.a[1] = p.a[2] = 0.
+
+    for k in range(3):
+        p.r[k] = random.uniform(-0.5, 0.5) * r_box
+        p.v[k] = 0.
+        p.a[k] = 0.
+
     p.gl_color  = vec4(random.random(), random.random(), random.random(), 0.0)
     p.gl_index = glGenLists(1)
     glNewList(p.gl_index, GL_COMPILE)
@@ -309,20 +292,20 @@ def add_particle():
 
 def del_particle():
     global particles
-    particles.pop()
+    if 0 < len(particles):
+        particles.pop()
 
 
 def reset_pos_vel_acc():
     global particles
-    for i in range(0, len(particles)):
-        p = particles[i]
-        p.r[0] = (0.5 - random.random()) * viewer.r_max
-        p.r[1] = (0.5 - random.random()) * viewer.r_max
-        p.r[2] = (0.5 - random.random()) * viewer.r_max
-        p.v[0] = (0.5 - random.random()) * sparams.limit/4.
-        p.v[1] = (0.5 - random.random()) * sparams.limit/4.
-        p.v[2] = (0.5 - random.random()) * sparams.limit/4.
-        s[i] = p
+    
+    r_box = sparams.sim_box_max[0] - sparams.sim_box_min[0]
+
+    for p in particles:
+        for dim in range(3):
+            p.r[dim] = (0.5 - random.random()) * r_box
+            p.v[dim] = (0.5 - random.random()) * sparams.limit/16.
+
 
 tStart = t0 = time.time()
 frames = 0
@@ -419,7 +402,6 @@ def draw_text_left_down():
     glEnable(GL_DEPTH_TEST)
 
 def draw_box():
-    global r_max
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
 
@@ -447,25 +429,14 @@ def update():
     global viewer
     istep = viewer.sim_step
     simulate()
-
     draw()
-'''
-    if (0 == istep % 2):
-        draw()
-'''
-
-
-
-
-
 
 
 def draw():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    gluLookAt(0., 0., -28.0-viewer.trans[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
-
+    gluLookAt(0., 3., 50.+viewer.trans[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
     glPushMatrix()
     glRotatef(viewer.view_rot[0], 1.0, 0.0, 0.0)
     glRotatef(viewer.view_rot[1], 0.0, 1.0, 0.0)
@@ -635,21 +606,21 @@ def motion(x, y):
 
     viewer.adj_grav(sparams)
 
-# new window size or exposure
+
 def reshape(width, height):
     h = float(height) / float(width)
     glViewport(0, 0, width, height)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-#    glFrustum(-1.0, 1.0, -h, h, 5.0, 60.0)
-    gluPerspective(100.0, h, 0.001, 1000.0)
+    gluPerspective(45.0, h, 0.1, 1000.0)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
     glTranslatef(0.0, 0.0, -40.0)
 
+
 def init():
     global particles
-    global r_max
+
 
     random.seed(3141592653589793238462643383279502884)
     pos   = vec4(-5.0, -5.0, 10.0, 0.0)
@@ -658,17 +629,14 @@ def init():
     blue  = vec4(0.2, 0.2, 1.0, 1.0)
 
     glLightfv(GL_LIGHT0, GL_AMBIENT, vec4(0.5, 0.1,  -0.1, 0.1))
-#    glLightfv(GL_LIGHT1, GL_AMBIENT, vec4(0.5, 0.1,  1.0,  0.1))
     glEnable(GL_CULL_FACE)
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0)
-#    glEnable(GL_LIGHT1)
     glEnable(GL_DEPTH_TEST)
 
     nbody_init()
 
-    for i in range(0, len(particles)):
-        p = particles[i]
+    for p in particles:
         p.gl_color  = vec4(random.random(), random.random(), random.random(), 0.0)
         p.gl_index = glGenLists(1)
         glNewList(p.gl_index, GL_COMPILE)
@@ -690,7 +658,7 @@ if __name__ == '__main__':
 
     glutInitWindowPosition(800, 0)
     glutInitWindowSize(800, 800)
-    glutCreateWindow("SPHpy")
+    glutCreateWindow("GRAVpy")
     init()
 
     glutDisplayFunc(update)
