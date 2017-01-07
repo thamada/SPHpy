@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-08 01:43:16 hamada>
+# Time-stamp: <2017-01-08 02:03:09 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 
@@ -702,9 +702,9 @@ if __name__ == '__main__':
     glutVisibilityFunc(visible)
 
     if "--info" in sys.argv:
-        logger.info("GL_RENDERER   = ", glGetString(GL_RENDERER))
-        logger.info("GL_VERSION    = ", glGetString(GL_VERSION))
-        logger.info("GL_VENDOR     = ", glGetString(GL_VENDOR))
-        logger.info("GL_EXTENSIONS = ", glGetString(GL_EXTENSIONS))
+        logger.info("GL_RENDERER   = %s", glGetString(GL_RENDERER))
+        logger.info("GL_VERSION    = %s", glGetString(GL_VERSION))
+        logger.info("GL_VENDOR     = %s", glGetString(GL_VENDOR))
+        logger.info("GL_EXTENSIONS = %s", glGetString(GL_EXTENSIONS))
 
     glutMainLoop()
