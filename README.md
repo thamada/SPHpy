@@ -1,4 +1,4 @@
-#!Time-stamp: <2017-01-08 01:20:44 hamada>
+#!Time-stamp: <2017-01-08 01:21:55 hamada>
 
 # SPHpy:
 Smoothed Particle Hydrodynamics written in python.
@@ -32,7 +32,7 @@ ubuntu:~/SPHpy$ ./ocl-check.py [ENTER]
 
 ## Target users
 
-me ^_^;,  and absolutery not for N-body/SPH experts
+schoolchildren, and absolutery not for N-body/SPH experts
 
 
 ## Keybind
