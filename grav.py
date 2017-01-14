@@ -28,7 +28,47 @@ def create_logger():
     _logger.addHandler(ch)
     return _logger
 
-logger = create_logger()
+
+def get_logger(str_position = ''):
+
+    log_basename = __file__
+
+    # Don't use Python's hasattr()
+    #     unless you're writing Python 3-only code 
+    #     and understand how it works.
+    if getattr(get_logger, "__count_called", None) is not None:
+        log_basename = "%s @%s" % (__file__, str_position)
+        get_logger.__count_called = get_logger.__count_called + 1
+    else:
+        get_logger.__count_called = 1
+
+    # create logger
+    logger = LG.getLogger(os.path.basename(log_basename))
+
+    logger.setLevel(LG.DEBUG)
+
+    # create console handler and set level to debug
+    ch = LG.StreamHandler()
+    ch.setLevel(LG.DEBUG)
+
+    # create formatter
+    formatter = LG.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    # add formatter to ch
+    ch.setFormatter(formatter)
+
+    # add ch to logger
+    logger.addHandler(ch)
+
+    # 'application' code
+    ## logger.debug('debug message')
+    ## logger.info('info message')
+    ## logger.warn('warn message')
+    ## logger.error('error message')
+    ## logger.critical('critical message')
+    return logger
+
+logger = get_logger()
 
 ## logger.debug('debug message')
 ## logger.info('info message')
@@ -174,7 +214,7 @@ def calculate_force():
 #    for p in particles: print p.gl_index, p.a
 
 
-def calculate_boundary_condition():
+def __calculate_boundary_condition():
     global particles
     c_scale = sparams.scale
     c_eps = sparams.boundary_eps
@@ -183,8 +223,6 @@ def calculate_boundary_condition():
     c_max = sparams.sim_box_max
 
     damp = 0.999
-    damp = 0.499
-    damp = 1.000
 
     for pi in particles:
         for k in range(3):
@@ -200,6 +238,19 @@ def calculate_boundary_condition():
                 print "DEBUG: v2, pi:", v2, pi.v, sparams.dt
                 pi.v[k] = pi.v[k] * 0.5
 
+
+def calculate_boundary_condition():
+    global particles
+    c_min = sparams.sim_box_min
+    c_max = sparams.sim_box_max
+
+    for pi in particles:
+        for k in range(3):
+            r = c_max[k]-c_min[k]
+            if ( pi.r[k] < c_min[k] ):
+                pi.r[k] = pi.r[k] + r
+            if ( pi.r[k] > c_max[k] ):
+                pi.r[k] = pi.r[k] - r
 
 def time_integration():
     time_integration_LeapFrog2ndOrder()
@@ -462,7 +513,7 @@ def decrease_velocity():
     logger.info("decreasing velocity")
 
     for p in particles:
-        for k in range(3): p.v[k] = p.v[k] * 0.1
+        for k in range(3): p.v[k] = p.v[k] * 0.9
 
 def increase_velocity():
     global particles
