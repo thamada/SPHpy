@@ -495,17 +495,15 @@ def idle():
 
 
 
-def decrease_velocity(logger=None):
+def decrease_velocity():
     global particles
-    if logger is None: logger = get_logger('decrease_velocity()')
     logger.info("decreasing velocity")
 
     for p in particles:
         for k in range(3): p.v[k] = p.v[k] * 0.9
 
-def increase_velocity(logger=None):
+def increase_velocity():
     global particles
-    if logger is None: logger = get_logger('increase_velocity()')
     logger.info("increasing velocity")
 
     for p in particles:
@@ -513,9 +511,8 @@ def increase_velocity(logger=None):
 
 
 # change view angle, exit upon ESC
-def key(k, x, y, logger=None):
+def key(k, x, y):
     global viewer, sparams, particles
-    if logger is None: logger = get_logger('key()')
 
     if k == 'k':
         viewer.view_rot[2] += 5.0
