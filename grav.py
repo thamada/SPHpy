@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-08 04:12:34 hamada>
+# Time-stamp: <2017-01-15 05:34:01 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -573,10 +573,16 @@ def key(k, x, y):
         viewer.sphere_radius_coef /= 1.2
         print "sphere_radius_coef:", viewer.sphere_radius_coef
     elif k == 'w':
-        shelve_key = write_shelve('/tmp/grav',logger)
+        shelve_key = write_shelve('/tmp/grav.dump',logger)
         if False: logger.info(shelve_key)
     elif k == 'W':
-        shelve_key = read_shelve('/tmp/grav',logger)
+        try:
+            shelve_key = read_shelve('/tmp/grav.dump',logger)
+        except Exception as e:
+            logger.error(str(type(e)))
+            logger.error(str(e.args))
+            logger.error(e.message)
+            sys.exit(-1)
         logger.info(shelve_key)
     elif k == 'q':
         sys.exit(0)
@@ -696,83 +702,56 @@ def visible(vis):
 
 def read_shelve(fname='/tmp/grav', logger=None):
     global particles
-    if logger is None: logger = get_logger('read_shelve()')
     pickle_protocol = pickle.HIGHEST_PROTOCOL
-    try :
+
+    try:
         dic = shelve.open(fname, protocol=pickle_protocol)
     except Exception as e:
-        logger.error(e)
+        logger.error(str(type(e)))
+        logger.error(str(e.args))
+        logger.error(e.message)
         logger.error(fname)
         sys.exit(-1)
 
-    keys = dic.keys()
+    logger.info(dic.keys())
+
     n = dic['n_particles']
-    logger.debug("nbody = %d"%n)
 
-    try :
-        for i in range(n):
-            for k in range(3):
-                p = Particle()
-                keyname = "r_%d_%d"%(i,k)
-#                print dic[keyname]
-                p.r[k] = dic[keyname]
-                keyname = "v_%d_%d"%(i,k)
-#                print dic[keyname]
-                p.v[k] = dic[keyname]
-            print i, p.r, p.v
-            if i < len(particles):
-                for k in range(3):
-                    particles[i].r[k] = p.r[k]
-                    particles[i].v[k] = p.v[k]
-            else:
-                particles.append(p)
+    if n != len(particles): logger.warn("n != len(particles): %d" % n)
 
-    except Exception as e:
-        logger.error(e)
-        logger.error(fname)
-        sys.exit(-1)
+    for i, p in enumerate(particles):
+        pi = Particle()
+        [pi.r, pi.v] = dic["key%d"%i]
+        for k in range(3):
+            p.r[k] = pi.r[k]
+            p.v[k] = pi.v[k]
 
     dic.close()
 
-    return keys
+    return True
 
 
-def write_shelve(fname='/tmp/grav', logger=None):
+def write_shelve(fname='/tmp/grav.dump', logger=None):
     global particles
     if logger is None: logger = get_logger('write_shelve()')
 
     pickle_protocol = pickle.HIGHEST_PROTOCOL
-
-    try :
+    try:
         dic = shelve.open(fname, protocol=pickle_protocol)
     except Exception as e:
-        logger.error(e)
+        logger.error(str(type(e)))
+        logger.error(str(e.args))
+        logger.error(e.message)
         logger.error(fname)
         sys.exit(-1)
-
-    keys = dic.keys()
 
     dic['n_particles'] = len(particles)
-
-    try :
-        for i, p in enumerate(particles):
-            for k in range(3):
-                keyname = "r_%d_%d"%(i,k)
-                dic[keyname] = particles[i].r[k]
-                keyname = "v_%d_%d"%(i,k)
-                dic[keyname] = particles[i].v[k]
-            print i, p.r, p.v
-    except Exception as e:
-        logger.error(e)
-        logger.error(fname)
-        print 'type:' + str(type(e))
-        print 'args:' + str(e.args)
-        print 'message:' + e.message
-        print 'e:' + str(e)
-        sys.exit(-1)
+    for i, p in enumerate(particles):
+        dic["key%d"%i] = [p.r, p.v]
 
     dic.close()
-    return keys
+
+    return True
 
 
 if __name__ == '__main__':
