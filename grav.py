@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-15 06:12:18 hamada>
+# Time-stamp: <2017-01-15 06:21:24 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -584,7 +584,7 @@ def key(k, x, y):
             logger.error(str(e.args))
             logger.error(e.message)
             sys.exit(-1)
-        logger.info(shelve_key)
+        if False: logger.info(shelve_key)
     elif k == 'q':
         sys.exit(0)
     elif ord(k) == 27: # Escape
@@ -714,18 +714,22 @@ def read_shelve(fname='/tmp/grav', logger=None):
         logger.error(fname)
         sys.exit(-1)
 
-    logger.info(dic.keys())
+    if False: logger.info(dic.keys())
 
     n = dic['n_particles']
+    logger.info("read %d particles from shelve" % n)
 
     if n != len(particles): logger.warn("n != len(particles): %d" % n)
 
+    if n > len(particles):  n = len(particles)
+
     for i, p in enumerate(particles):
         pi = Particle()
-        [pi.r, pi.v] = dic["key%d"%i]
-        for k in range(3):
-            p.r[k] = pi.r[k]
-            p.v[k] = pi.v[k]
+        if (i < n):
+            [pi.r, pi.v] = dic["key%d"%i]
+            for k in range(3):
+                p.r[k] = pi.r[k]
+                p.v[k] = pi.v[k]
 
     dic.close()
 
