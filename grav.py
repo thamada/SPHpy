@@ -39,14 +39,8 @@ def get_logger(str_position = ''):
     if getattr(get_logger, "__count_called", None) is not None:
         log_basename = "%s @%s" % (__file__, str_position)
         get_logger.__count_called = get_logger.__count_called + 1
-        '''
-        print "----------------- %d times called!!" % (get_logger.__count_called)
-        '''
     else:
         get_logger.__count_called = 1
-        '''
-        print "----------------- first time called!!"
-        '''
 
     # create logger
     logger = LG.getLogger(os.path.basename(log_basename))
@@ -501,15 +495,17 @@ def idle():
 
 
 
-def decrease_velocity():
+def decrease_velocity(logger=None):
     global particles
+    if logger is None: logger = get_logger('decrease_velocity()')
     logger.info("decreasing velocity")
 
     for p in particles:
         for k in range(3): p.v[k] = p.v[k] * 0.9
 
-def increase_velocity():
+def increase_velocity(logger=None):
     global particles
+    if logger is None: logger = get_logger('increase_velocity()')
     logger.info("increasing velocity")
 
     for p in particles:
@@ -517,8 +513,9 @@ def increase_velocity():
 
 
 # change view angle, exit upon ESC
-def key(k, x, y):
+def key(k, x, y, logger=None):
     global viewer, sparams, particles
+    if logger is None: logger = get_logger('key()')
 
     if k == 'k':
         viewer.view_rot[2] += 5.0
