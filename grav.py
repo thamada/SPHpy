@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-15 06:21:24 hamada>
+# Time-stamp: <2017-01-15 06:47:46 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -13,6 +13,8 @@ from OpenGL.constants import GLfloat
 import sys, time, math, random
 import shelve
 import pickle
+import hashlib
+import commands
 
 def create_logger():
     # create logger
@@ -574,11 +576,15 @@ def key(k, x, y):
         viewer.sphere_radius_coef /= 1.2
         print "sphere_radius_coef:", viewer.sphere_radius_coef
     elif k == 'w':
+        do_uncompress('/tmp/grav.dump',logger)
         shelve_key = write_shelve('/tmp/grav.dump',logger)
+        do_compress('/tmp/grav.dump',logger)
         if False: logger.info(shelve_key)
     elif k == 'W':
         try:
+            do_uncompress('/tmp/grav.dump',logger)
             shelve_key = read_shelve('/tmp/grav.dump',logger)
+            do_compress('/tmp/grav.dump',logger)
         except Exception as e:
             logger.error(str(type(e)))
             logger.error(str(e.args))
@@ -756,6 +762,18 @@ def write_shelve(fname='/tmp/grav.dump', logger=None):
 
     dic.close()
 
+    return True
+
+def do_uncompress(filename, logger=None):
+    if logger is None: logger = get_logger('do_uncompress()')
+    check = commands.getoutput("hostname;time bzip2 -d %s.db.bz2" % filename )
+    # logger.debug("%s", check)
+    return True
+
+def do_compress(filename, logger=None):
+    if logger is None: logger = get_logger('do_compress()')
+    check = commands.getoutput("hostname;time bzip2 -9 %s.db" % filename )
+    # logger.debug("%s", check)
     return True
 
 
