@@ -175,7 +175,7 @@ def nbody_init():
     zmax = sparams.sim_box_max[2]
     zmin = sparams.sim_box_min[2]
 
-    for i in range(8):
+    for i in range(3):
         p = Particle()
         p.r[0] = random.uniform(xmin, xmax)
         p.r[1] = random.uniform(ymin, ymax)
