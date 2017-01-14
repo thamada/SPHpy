@@ -1,4 +1,4 @@
-Time-stamp: <2017-01-08 01:37:38 hamada>
+Time-stamp: <2017-01-15 06:54:05 hamada>
 
 # SPHpy:
 Smoothed Particle Hydrodynamics simulation written in python.
@@ -59,4 +59,4 @@ schoolchildren, and absolutery not for N-body/SPH experts
 
 - [Gingold R. A., Monaghan, J. J., 1977, MNRAS, 181, 375](http://mnras.oxfordjournals.org/content/181/3/375.abstract)
 - [Lucy L., 1977, AJ, 82, 1013](http://adsabs.harvard.edu/abs/1977AJ.....82.1013L)
-
+- [Trenti, M., Hut, P., 2008, Scholarpedia, 3(5):3930](http://www.scholarpedia.org/article/N-body_simulations_(gravitational))
