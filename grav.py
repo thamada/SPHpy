@@ -2,7 +2,6 @@
 # Time-stamp: <2017-01-08 04:12:34 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
-
 import os
 import logging as LG
 import OpenGL
@@ -12,6 +11,8 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from OpenGL.constants import GLfloat
 import sys, time, math, random
+import shelve
+import pickle
 
 def create_logger():
     # create logger
@@ -569,6 +570,9 @@ def key(k, x, y):
     elif k == '0':
         viewer.sphere_radius_coef /= 1.2
         print "sphere_radius_coef:", viewer.sphere_radius_coef
+    elif k == 'w':
+        shelve_key = write_shelve('/tmp/xxx',logger)
+        logger.info(shelve_key)
     elif k == 'q':
         sys.exit(0)
     elif ord(k) == 27: # Escape
@@ -683,6 +687,35 @@ def init():
 def visible(vis):
     if GLUT_VISIBLE == vis:
         glutIdleFunc(idle)
+
+
+def write_shelve(fname='/tmp/grav', logger=None):
+    global particles
+    if logger is None: logger = get_logger('get_shelve()')
+
+    pickle_protocol = pickle.HIGHEST_PROTOCOL
+
+    try :
+        dic = shelve.open(fname, protocol=pickle_protocol)
+    except Exception as e:
+        logger.error(e)
+        logger.error(fname)
+        sys.exit(-1)
+
+    keys = dic.keys()
+
+    try :
+        dic['particles'] = [ ]
+        for i, p in enumerate(particles):
+            dic['particles'].append(p)
+            print (i,p)
+    except Exception as e:
+        logger.error(e)
+        logger.error(fname)
+        sys.exit(-1)
+
+    dic.close()
+    return keys
 
 
 if __name__ == '__main__':
