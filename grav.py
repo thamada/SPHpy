@@ -171,16 +171,18 @@ def nbody_init():
     zmax = sparams.sim_box_max[2]
     zmin = sparams.sim_box_min[2]
 
-    for i in range(4):
-        p = Particle()
-        p.r[0] = random.uniform(xmin, xmax)
-        p.r[1] = random.uniform(ymin, ymax)
-        p.r[2] = random.uniform(zmin, zmax)
-        p.v[0] = p.v[1] = p.v[2] = 0.0
-        logger.debug("%.2f, %.2f, %.2f" % (p.r[0], p.r[1], p.r[2]))
-        particles.append(p)
+    if 0 == len(particles):
+        for i in range(4):
+            p = Particle()
+            p.r[0] = random.uniform(xmin, xmax)
+            p.r[1] = random.uniform(ymin, ymax)
+            p.r[2] = random.uniform(zmin, zmax)
+            p.v[0] = p.v[1] = p.v[2] = 0.0
+            logger.debug("%.2f, %.2f, %.2f" % (p.r[0], p.r[1], p.r[2]))
+            particles.append(p)
 
     logger.debug("# of particles: %d", len(particles))
+
 
 
 def calculate_force():
@@ -571,7 +573,10 @@ def key(k, x, y):
         viewer.sphere_radius_coef /= 1.2
         print "sphere_radius_coef:", viewer.sphere_radius_coef
     elif k == 'w':
-        shelve_key = write_shelve('/tmp/xxx',logger)
+        shelve_key = write_shelve('/tmp/grav',logger)
+        if False: logger.info(shelve_key)
+    elif k == 'W':
+        shelve_key = read_shelve('/tmp/grav',logger)
         logger.info(shelve_key)
     elif k == 'q':
         sys.exit(0)
@@ -689,9 +694,52 @@ def visible(vis):
         glutIdleFunc(idle)
 
 
+def read_shelve(fname='/tmp/grav', logger=None):
+    global particles
+    if logger is None: logger = get_logger('read_shelve()')
+    pickle_protocol = pickle.HIGHEST_PROTOCOL
+    try :
+        dic = shelve.open(fname, protocol=pickle_protocol)
+    except Exception as e:
+        logger.error(e)
+        logger.error(fname)
+        sys.exit(-1)
+
+    keys = dic.keys()
+    n = dic['n_particles']
+    logger.debug("nbody = %d"%n)
+
+    try :
+        for i in range(n):
+            for k in range(3):
+                p = Particle()
+                keyname = "r_%d_%d"%(i,k)
+#                print dic[keyname]
+                p.r[k] = dic[keyname]
+                keyname = "v_%d_%d"%(i,k)
+#                print dic[keyname]
+                p.v[k] = dic[keyname]
+            print i, p.r, p.v
+            if i < len(particles):
+                for k in range(3):
+                    particles[i].r[k] = p.r[k]
+                    particles[i].v[k] = p.v[k]
+            else:
+                particles.append(p)
+
+    except Exception as e:
+        logger.error(e)
+        logger.error(fname)
+        sys.exit(-1)
+
+    dic.close()
+
+    return keys
+
+
 def write_shelve(fname='/tmp/grav', logger=None):
     global particles
-    if logger is None: logger = get_logger('get_shelve()')
+    if logger is None: logger = get_logger('write_shelve()')
 
     pickle_protocol = pickle.HIGHEST_PROTOCOL
 
@@ -704,14 +752,23 @@ def write_shelve(fname='/tmp/grav', logger=None):
 
     keys = dic.keys()
 
+    dic['n_particles'] = len(particles)
+
     try :
-        dic['particles'] = [ ]
         for i, p in enumerate(particles):
-            dic['particles'].append(p)
-            print (i,p)
+            for k in range(3):
+                keyname = "r_%d_%d"%(i,k)
+                dic[keyname] = particles[i].r[k]
+                keyname = "v_%d_%d"%(i,k)
+                dic[keyname] = particles[i].v[k]
+            print i, p.r, p.v
     except Exception as e:
         logger.error(e)
         logger.error(fname)
+        print 'type:' + str(type(e))
+        print 'args:' + str(e.args)
+        print 'message:' + e.message
+        print 'e:' + str(e)
         sys.exit(-1)
 
     dic.close()
