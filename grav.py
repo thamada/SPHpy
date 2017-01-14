@@ -89,8 +89,6 @@ help_msg = [
 "t: dt--",
 "T: dt++",
 "r: shuffle particles",
-"e: wall(e) --",
-"E: wall(e) ++",
 "o: Sphere size --",
 "O: Sphere size ++",
 "v: decrease velocity",
@@ -106,15 +104,12 @@ help_msg = [
 
 class Simulation_Parameters:
     def __init__(self, scale = 1.00,
-                 boundary_eps  = 0.00001, boundary_radius = 0.004,
                  sim_box_min = [-10., -10.0, -10.0],
                  sim_box_max = [ 10.,  10.0,  10.0],
                  limit=200., dt=0.004):
         self.limit = limit         #  velocity limitation at boundary condition
         self.dt    = dt            #  delta time for each time-stemps (shared time-step scheme)
         self.scale = scale         # multiples x,y,z by this value
-        self.boundary_eps     = boundary_eps    # constant for boundary rebounding
-        self.boundary_radius  = boundary_radius # constant for boundary rebounding (meter)
         self.sim_box_min = sim_box_min # simulation box size
         self.sim_box_max = sim_box_max # simulation box size
 
@@ -140,7 +135,7 @@ class Viewer:
         self.sphere_stack = sphere_stack
 
 class Particle:
-    def __init__(self, gl_index=0, gl_color=vec4(1.,1.,1.,1.) , mass=1., r=[0., 0., 0.], v=[0., 0., 0.], a=[0., 0., 0.], f=[0., 0., 0.], radii=0.002):
+    def __init__(self, gl_index=0, gl_color=vec4(1.,1.,1.,1.) , mass=1., r=[0., 0., 0.], v=[0., 0., 0.], a=[0., 0., 0.], f=[0., 0., 0.], pot=[0., 0., 0.], radii=0.002):
         self.gl_index = gl_index # index for OpenGL display list
         self.gl_color = gl_color
         self.m  = mass
@@ -148,6 +143,7 @@ class Particle:
         self.v = [v[i] for i in range (0, 3)]
         self.a = [a[i] for i in range (0, 3)]
         self.f = [f[i] for i in range (0, 3)]
+        self.pot = [pot[i] for i in range (0, 3)]
         self.radii = radii
 
 
@@ -161,7 +157,6 @@ def nbody_init():
     sparams.sim_box_min   = [ -7.0, -7.0,  -7.0]
     sparams.sim_box_max   = [  7.0,  7.0,   7.0]
     sparams.scale = 0.01
-    sparams.boundary_eps = 4.37893890381e-3
     sparams.dt = 0.003
     sparams.limit = 100.0
     viewer.sphere_radius_coef = 144.0
@@ -175,7 +170,7 @@ def nbody_init():
     zmax = sparams.sim_box_max[2]
     zmin = sparams.sim_box_min[2]
 
-    for i in range(3):
+    for i in range(4):
         p = Particle()
         p.r[0] = random.uniform(xmin, xmax)
         p.r[1] = random.uniform(ymin, ymax)
@@ -213,32 +208,7 @@ def calculate_force():
 
 #    for p in particles: print p.gl_index, p.a
 
-
-def __calculate_boundary_condition():
-    global particles
-    c_scale = sparams.scale
-    c_eps = sparams.boundary_eps
-    c_r   = sparams.boundary_radius
-    c_min = sparams.sim_box_min
-    c_max = sparams.sim_box_max
-
-    damp = 0.999
-
-    for pi in particles:
-        for k in range(3):
-            diff = 2.0 * c_r - ( pi.r[k] - c_min[k] ) * c_scale
-            if diff > c_eps : pi.v[k] = pi.v[k] * -damp
-            diff = 2.0 * c_r - ( c_max[k] - pi.r[k] ) * c_scale
-            if diff > c_eps : pi.v[k] = pi.v[k] * -damp
-
-    for pi in particles:
-        for k in range(3):
-            v2 = ( pi.v[k] * pi.v[k])
-            if v2 > 1.0e8 :
-                print "DEBUG: v2, pi:", v2, pi.v, sparams.dt
-                pi.v[k] = pi.v[k] * 0.5
-
-
+# periodic boundary
 def _calculate_boundary_condition():
     global particles
     c_min = sparams.sim_box_min
@@ -252,6 +222,7 @@ def _calculate_boundary_condition():
             if ( pi.r[k] > c_max[k] ):
                 pi.r[k] = pi.r[k] - r
 
+# hard wall
 def calculate_boundary_condition():
     global particles
     c_min = sparams.sim_box_min
@@ -393,7 +364,6 @@ def draw_text_left_top():
     text_list.append( "FPS:       %f" % viewer.fps_calc )
     text_list.append( "FPS(Phys): %f" % viewer.fps_phys )
     text_list.append( "# of particles: %d" % len(particles) )
-    text_list.append( "wall(e): %.2f" % (9.85e-3 / sparams.boundary_eps ) )
     text_list.append( "dt: %.2e" % sparams.dt)
     text_list.append( "number of particles: %d" % len(particles))
 
@@ -564,13 +534,6 @@ def key(k, x, y):
         sparams.sim_box_max   = [ sparams.sim_box_max[k] * 1.3 for k in  range(3)]
     elif k == 'r':
         reset_pos_vel_acc()
-    elif k == 'e':
-        sparams.boundary_eps *= 1.5
-        logger.info(sparams.boundary_eps)
-    elif k == 'E':
-        sparams.boundary_eps /= 1.5
-        logger.info(sparams.boundary_eps)
-
     elif k == 'o':
         for p in particles:
             if 0.0 < p.radii: p.radii -= 1e-4
