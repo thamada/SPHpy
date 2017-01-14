@@ -28,7 +28,53 @@ def create_logger():
     _logger.addHandler(ch)
     return _logger
 
-logger = create_logger()
+
+def get_logger(str_position = ''):
+
+    log_basename = __file__
+
+    # Don't use Python's hasattr()
+    #     unless you're writing Python 3-only code 
+    #     and understand how it works.
+    if getattr(get_logger, "__count_called", None) is not None:
+        log_basename = "%s @%s" % (__file__, str_position)
+        get_logger.__count_called = get_logger.__count_called + 1
+        '''
+        print "----------------- %d times called!!" % (get_logger.__count_called)
+        '''
+    else:
+        get_logger.__count_called = 1
+        '''
+        print "----------------- first time called!!"
+        '''
+
+    # create logger
+    logger = LG.getLogger(os.path.basename(log_basename))
+
+    logger.setLevel(LG.DEBUG)
+
+    # create console handler and set level to debug
+    ch = LG.StreamHandler()
+    ch.setLevel(LG.DEBUG)
+
+    # create formatter
+    formatter = LG.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    # add formatter to ch
+    ch.setFormatter(formatter)
+
+    # add ch to logger
+    logger.addHandler(ch)
+
+    # 'application' code
+    ## logger.debug('debug message')
+    ## logger.info('info message')
+    ## logger.warn('warn message')
+    ## logger.error('error message')
+    ## logger.critical('critical message')
+    return logger
+
+logger = get_logger()
 
 ## logger.debug('debug message')
 ## logger.info('info message')
