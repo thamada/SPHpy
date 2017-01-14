@@ -150,7 +150,7 @@ def nbody_init():
 def calculate_force():
     global particles
 
-    ieps2 = 1.0e-4
+    ieps2 = 1.0e-8
 
     for pi in particles:
         pi.a = [0., 0., 0.]
