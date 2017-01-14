@@ -239,7 +239,7 @@ def __calculate_boundary_condition():
                 pi.v[k] = pi.v[k] * 0.5
 
 
-def calculate_boundary_condition():
+def _calculate_boundary_condition():
     global particles
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
@@ -251,6 +251,19 @@ def calculate_boundary_condition():
                 pi.r[k] = pi.r[k] + r
             if ( pi.r[k] > c_max[k] ):
                 pi.r[k] = pi.r[k] - r
+
+def calculate_boundary_condition():
+    global particles
+    c_min = sparams.sim_box_min
+    c_max = sparams.sim_box_max
+
+    for pi in particles:
+        for k in range(3):
+            r = c_max[k]-c_min[k]
+            if ( pi.r[k] < c_min[k] ):
+                pi.v[k] = -pi.v[k]
+            if ( pi.r[k] > c_max[k] ):
+                pi.v[k] = -pi.r[k]
 
 def time_integration():
     time_integration_LeapFrog2ndOrder()
