@@ -185,7 +185,7 @@ def nbody_init():
 def calculate_force():
     global particles
 
-    ieps2 = 1.0e-4
+    ieps2 = 1.0e-8
 
     for pi in particles:
         pi.a = [0., 0., 0.]
@@ -209,7 +209,7 @@ def calculate_force():
 #    for p in particles: print p.gl_index, p.a
 
 # periodic boundary
-def _calculate_boundary_condition():
+def __calculate_boundary_condition():
     global particles
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
