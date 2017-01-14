@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# Time-stamp: <2017-01-15 08:38:59 hamada>
+#!/usr/bin/env python3
+# Time-stamp: <2017-01-15 08:43:29 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -14,7 +14,8 @@ import sys, time, math, random
 import shelve
 import pickle
 import hashlib
-import commands
+#import commands # for Python2.7
+import subprocess
 
 def create_logger():
     # create logger
@@ -557,13 +558,13 @@ def key(k, x, y):
     elif k == '1':
         logger.info("r,v,a:\n\t%s\n\t%s\n\t%s" % (particles[0].r,particles[0].v,particles[0].a))
     elif k == 'h':
-        for s in help_msg: print s
+        for s in help_msg: print (s)
     elif k == '2':
         if viewer.is_3D:
-            print "3D -> 2D"
+            print ("3D -> 2D")
             viewer.is_3D = False
         else:
-            print "2D -> 3D"
+            print ("2D -> 3D")
             viewer.is_3D = True
     elif k == 'v':
         decrease_velocity()
@@ -571,10 +572,10 @@ def key(k, x, y):
         increase_velocity()
     elif k == '9':
         viewer.sphere_radius_coef *= 1.2
-        print "sphere_radius_coef:", viewer.sphere_radius_coef
+        print ("sphere_radius_coef:", viewer.sphere_radius_coef)
     elif k == '0':
         viewer.sphere_radius_coef /= 1.2
-        print "sphere_radius_coef:", viewer.sphere_radius_coef
+        print ("sphere_radius_coef:", viewer.sphere_radius_coef)
     elif k == 'w':
         do_uncompress('/tmp/grav.dump',logger)
         shelve_key = write_shelve('/tmp/grav.dump',logger)
@@ -648,7 +649,7 @@ def mouse(button, state, x, y):
 def motion(x, y):
     global viewer, sparams
 
-    print "motion: ", x, y, viewer.trans
+    print ("motion: ", x, y, viewer.trans)
     if viewer.mouse_l == 1 :
         speed = 1.2
         viewer.view_rot[0] = (y - viewer.mpos[1]) * speed
@@ -656,7 +657,7 @@ def motion(x, y):
     elif viewer.mouse_r == 1:
         viewer.trans[1] += (x - viewer.mpos[0]) * 0.01
         viewer.trans[2] -= (y - viewer.mpos[1]) * 0.01
-        print viewer.trans
+        print (viewer.trans)
 
     if viewer.mouse_l ==1 or viewer.mouse_m == 1 or viewer.mouse_r == 1:
         glutPostRedisplay()
@@ -766,13 +767,15 @@ def write_shelve(fname='/tmp/grav.dump', logger=None):
 
 def do_uncompress(filename, logger=None):
     if logger is None: logger = get_logger('do_uncompress()')
-    check = commands.getoutput("hostname;time bzip2 -d %s.db.bz2" % filename )
+    # check = commands.getoutput("hostname;time bzip2 -d %s.db.bz2" % filename )
+    check = subprocess.checkoutput("hostname;time bzip2 -d %s.db.bz2" % filename )
     # logger.debug("%s", check)
     return True
 
 def do_compress(filename, logger=None):
     if logger is None: logger = get_logger('do_compress()')
-    check = commands.getoutput("hostname;time bzip2 -9 %s.db" % filename )
+    # check = commands.getoutput("hostname;time bzip2 -9 %s.db" % filename )
+    check = subprocess.checkoutput("hostname;time bzip2 -9 %s.db" % filename )
     # logger.debug("%s", check)
     return True
 
