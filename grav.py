@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-15 05:34:01 hamada>
+# Time-stamp: <2017-01-15 06:12:18 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -107,12 +107,13 @@ class Simulation_Parameters:
     def __init__(self, scale = 1.00,
                  sim_box_min = [-10., -10.0, -10.0],
                  sim_box_max = [ 10.,  10.0,  10.0],
-                 limit=200., dt=0.004):
+                 limit=200., dt=0.004, eps=0.02):
         self.limit = limit         #  velocity limitation at boundary condition
         self.dt    = dt            #  delta time for each time-stemps (shared time-step scheme)
         self.scale = scale         # multiples x,y,z by this value
         self.sim_box_min = sim_box_min # simulation box size
         self.sim_box_max = sim_box_max # simulation box size
+        self.eps = eps # Aarseth Softening. (Aarseth, S. 1963, MNRAS, 126, 223)
 
 class Viewer:
     def __init__(self,
@@ -186,9 +187,9 @@ def nbody_init():
 
 
 def calculate_force():
-    global particles
+    global particles, sparams
 
-    ieps2 = 5.0e-5
+    ieps2 = sparams.eps * sparams.eps
 
     for pi in particles:
         pi.a = [0., 0., 0.]
