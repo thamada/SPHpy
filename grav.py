@@ -214,7 +214,7 @@ def calculate_force():
 #    for p in particles: print p.gl_index, p.a
 
 
-def calculate_boundary_condition():
+def __calculate_boundary_condition():
     global particles
     c_scale = sparams.scale
     c_eps = sparams.boundary_eps
@@ -238,6 +238,19 @@ def calculate_boundary_condition():
                 print "DEBUG: v2, pi:", v2, pi.v, sparams.dt
                 pi.v[k] = pi.v[k] * 0.5
 
+
+def calculate_boundary_condition():
+    global particles
+    c_min = sparams.sim_box_min
+    c_max = sparams.sim_box_max
+
+    for pi in particles:
+        for k in range(3):
+            r = c_max[k]-c_min[k]
+            if ( pi.r[k] < c_min[k] ):
+                pi.r[k] = pi.r[k] + r
+            if ( pi.r[k] > c_max[k] ):
+                pi.r[k] = pi.r[k] - r
 
 def time_integration():
     time_integration_LeapFrog2ndOrder()
