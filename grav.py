@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-16 22:40:36 hamada>
+# Time-stamp: <2017-01-16 23:06:40 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -184,7 +184,7 @@ def create_particle():
 
     p.color = vec4(random.random(), random.random(), random.random(), 0.0)
 
-    p.gl_index = glGenLists(1)
+    p.gl_index = glGenLists(2)
     return p
 
 def nbody_init():
@@ -422,8 +422,7 @@ def draw_text_left_top():
     text_list.append( "eps: %.2e" % sparams.eps)
     text_list.append( "number of particles: %d" % len(particles))
 
-
-    glColor4f( 1.0, 1.0, 0.5, 1.0 )
+    glColor4f( 1.0, 1.0, 1.0, 1.0 )
     glDisable(GL_DEPTH_TEST)
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
@@ -433,7 +432,6 @@ def draw_text_left_top():
     glLoadIdentity()
     glTranslatef(-.9, .8, 0)
     glScalef(.0006, .0006, 1)
-
     y = 10
 
     for s in text_list:
@@ -515,7 +513,7 @@ def draw():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    gluLookAt(0.0, 15.0, -0.5*viewer.trans[2]-30., # position of camera
+    gluLookAt(0.0, 15.0, 0.5*viewer.trans[2]+30., # position of camera
               0.0,  0.0, 0.0,                  # position of center
               0.0,  1.0, 0.0)                  # direction of Up
     glPushMatrix()
@@ -537,7 +535,6 @@ def draw():
     draw_text_left_top()
     draw_text_left_down()
     glutSwapBuffers()
-
 
     framerate()
 
