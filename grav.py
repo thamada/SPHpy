@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-16 11:35:51 hamada>
+# Time-stamp: <2017-01-16 11:51:26 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -109,7 +109,7 @@ class Simulation_Parameters:
     def __init__(self, scale = 1.00,
                  sim_box_min = [-10., -10.0, -10.0],
                  sim_box_max = [ 10.,  10.0,  10.0],
-                 limit=200., dt=1e-3, eps=4e-3, e_kin=0.0, e_pot=0.0, sim_step=0, sim_time=0.):
+                 limit=200., dt=1e-3, eps=1.9e-3, e_kin=0.0, e_pot=0.0, sim_step=0, sim_time=0.):
         self.limit = limit         #  velocity limitation at boundary condition
         self.dt    = dt            #  delta time for each time-stemps (shared time-step scheme)
         self.scale = scale         # multiples x,y,z by this value
