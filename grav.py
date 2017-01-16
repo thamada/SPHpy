@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-16 22:15:39 hamada>
+# Time-stamp: <2017-01-16 22:40:36 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -360,15 +360,13 @@ def  _glutSolidSphere(radius):
 
 def add_particle():
     global particles, viewer
-    r_box = sparams.sim_box_max[0] - sparams.sim_box_min[0]
-
     p = create_particle()
+    particles.append(p)
 
     glNewList(p.gl_index, GL_COMPILE)
     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, p.color)
     _glutSolidSphere(p.radii)
     glEndList()
-    particles.append(p)
 
 
 def del_particle():
@@ -488,7 +486,7 @@ def draw_box():
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
 
-    glLineWidth(2)
+    glLineWidth(1)
     glBegin(GL_LINES)
     glColor3f(1.0, 1.0, 1.0)
     glVertex3f(c_min[0], c_min[1], c_min[2]),    glVertex3f(c_max[0], c_min[1], c_min[2])
@@ -512,7 +510,6 @@ def update():
     global viewer
     simulate()
     draw()
-
 
 def draw():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -540,6 +537,7 @@ def draw():
     draw_text_left_top()
     draw_text_left_down()
     glutSwapBuffers()
+
 
     framerate()
 
