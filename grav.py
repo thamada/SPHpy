@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-16 23:41:12 hamada>
+# Time-stamp: <2017-01-16 23:51:23 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -235,8 +235,13 @@ def calculate_force():
         pi = particles[i]
         for j in range(i+1, npar):
             pj = particles[j]
-            dr = [ (pj.r[k] - pi.r[k]) for k in range(3) ]
+            dr = [0., 0., 0.]
+            dv = [0., 0., 0.]
+            for k in range(3):
+                dr[k] = pj.r[k] - pi.r[k]
+                dv[k] = pj.v[k] - pi.v[k]
             r2  = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2] + ieps2
+            vr  = dr[0]+dv[0] + dr[1]*dv[1] + dr[2]*dv[2]
             r   = math.sqrt(r2)
             r1i = 1.0/r
             r2i = r1i * r1i
@@ -247,9 +252,13 @@ def calculate_force():
             pi.pot += pj.m * r1i
             pj.pot += pi.m * r1i
             # -- acc --
-            for dim in range(3):
-                pi.a[dim] += dr3[dim] * pj.m     # i-th particle
-                pj.a[dim] -= dr3[dim] * pi.m     # j-th particle
+            for k in range(3):
+                pi.a[k] += dr3[k] * pj.m     # i-th particle
+                pj.a[k] -= dr3[k] * pi.m     # j-th particle
+            # -- jerk --
+            for k in range(3):
+                pi.jk[k] += pj.m * ( dv[k]*r3i - 3.0*vr*dr[k]*r5i ) 
+                pj.jk[k] -= pi.m * ( dv[k]*r3i - 3.0*vr*dr[k]*r5i ) 
 
 #    for p in particles: print p.gl_index, p.a
 
