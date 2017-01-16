@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-16 22:05:33 hamada>
+# Time-stamp: <2017-01-16 22:15:39 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -167,15 +167,24 @@ def create_particle():
     zmax = sparams.sim_box_max[2]
     zmin = sparams.sim_box_min[2]
     p = Particle()
-    p.m    = 1.0 if random.uniform(-1.0, 1.0) > 0.0 else -1.0
+    p.m    = 1.0 # if random.uniform(-1.0, 1.0) > 0.0 else -1.0
     p.r[0] = random.uniform(xmin, xmax)
     p.r[1] = random.uniform(ymin, ymax)
     p.r[2] = random.uniform(zmin, zmax)
-    p.v[0] = p.v[1] = p.v[2] = 0.0
+    p.pot = 0.
+    for k in range(3):
+        p.v[k] = 0.
+        p.a[k] = 0.
+        p.jk[k] = 0.
+
     if p.m > 0.0:
         p.color = vec4(1.0, 0.4, 0.0, 0.8)
     else:
         p.color = vec4(0.0, 0.4, 1.0, 0.8)
+
+    p.color = vec4(random.random(), random.random(), random.random(), 0.0)
+
+    p.gl_index = glGenLists(1)
     return p
 
 def nbody_init():
@@ -190,7 +199,7 @@ def nbody_init():
     viewer.sphere_stack = 16
 
     if 0 == len(particles):
-        for i in range(65):
+        for i in range(8):
             p = create_particle()
             logger.debug("%.2f, %.2f, %.2f" % (p.r[0], p.r[1], p.r[2]))
             particles.append(p)
@@ -259,7 +268,7 @@ def __calculate_boundary_condition():
                 pi.r[k] = pi.r[k] - r
 
 # hard wall
-def ___calculate_boundary_condition():
+def calculate_boundary_condition():
     global particles
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
@@ -273,7 +282,7 @@ def ___calculate_boundary_condition():
                 pi.v[k] = -pi.r[k]
 
 # soft wall
-def calculate_boundary_condition():
+def __calculate_boundary_condition():
     global particles
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
@@ -352,17 +361,11 @@ def  _glutSolidSphere(radius):
 def add_particle():
     global particles, viewer
     r_box = sparams.sim_box_max[0] - sparams.sim_box_min[0]
-    p = Particle()
 
-    for k in range(3):
-        p.r[k] = random.uniform(-0.5, 0.5) * r_box
-        p.v[k] = 0.
-        p.a[k] = 0.
+    p = create_particle()
 
-    p.gl_color  = vec4(random.random(), random.random(), random.random(), 0.0)
-    p.gl_index = glGenLists(1)
     glNewList(p.gl_index, GL_COMPILE)
-    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, p.gl_color)
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, p.color)
     _glutSolidSphere(p.radii)
     glEndList()
     particles.append(p)
@@ -745,10 +748,8 @@ def init():
     nbody_init()
 
     for p in particles:
-        p.gl_color  = p.color
-        p.gl_index = glGenLists(1)
         glNewList(p.gl_index, GL_COMPILE)
-        glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, p.gl_color)
+        glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, p.color)
         _glutSolidSphere(p.radii)
         glEndList()
 
