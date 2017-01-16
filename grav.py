@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-16 21:44:48 hamada>
+# Time-stamp: <2017-01-16 22:05:33 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -143,7 +143,7 @@ class Viewer:
         self.sphere_stack = sphere_stack
 
 class Particle:
-    def __init__(self, gl_index=0, gl_color=vec4(1.,1.,1.,1.) , mass=1., r=[0., 0., 0.], v=[0., 0., 0.], a=[0., 0., 0.], f=[0., 0., 0.], jk=[0., 0., 0.], pot=0., radii=0.002):
+    def __init__(self, gl_index=0, gl_color=vec4(1.,1.,1.,1.) , mass=1., r=[0., 0., 0.], v=[0., 0., 0.], a=[0., 0., 0.], f=[0., 0., 0.], jk=[0., 0., 0.], pot=0., radii=0.002, color = vec4(1.,1.,1.,1.) ):
         self.gl_index = gl_index # index for OpenGL display list
         self.gl_color = gl_color
         self.m  = mass
@@ -154,11 +154,29 @@ class Particle:
         self.jk = [jk[i] for i in range (0, 3)]
         self.pot = pot
         self.radii = radii
-
+        self.color = color
 
 viewer = Viewer()
 sparams = Simulation_Parameters()
 
+def create_particle():
+    xmax = sparams.sim_box_max[0]
+    xmin = sparams.sim_box_min[0]
+    ymax = sparams.sim_box_max[1]
+    ymin = sparams.sim_box_min[1]
+    zmax = sparams.sim_box_max[2]
+    zmin = sparams.sim_box_min[2]
+    p = Particle()
+    p.m    = 1.0 if random.uniform(-1.0, 1.0) > 0.0 else -1.0
+    p.r[0] = random.uniform(xmin, xmax)
+    p.r[1] = random.uniform(ymin, ymax)
+    p.r[2] = random.uniform(zmin, zmax)
+    p.v[0] = p.v[1] = p.v[2] = 0.0
+    if p.m > 0.0:
+        p.color = vec4(1.0, 0.4, 0.0, 0.8)
+    else:
+        p.color = vec4(0.0, 0.4, 1.0, 0.8)
+    return p
 
 def nbody_init():
     global particles, sparams, viewer
@@ -171,21 +189,9 @@ def nbody_init():
     viewer.sphere_slic = 16
     viewer.sphere_stack = 16
 
-    xmax = sparams.sim_box_max[0]
-    xmin = sparams.sim_box_min[0]
-    ymax = sparams.sim_box_max[1]
-    ymin = sparams.sim_box_min[1]
-    zmax = sparams.sim_box_max[2]
-    zmin = sparams.sim_box_min[2]
-
     if 0 == len(particles):
         for i in range(65):
-            p = Particle()
-            p.m    = -1.0 # random.uniform(-1.0, 1.0) * 5.
-            p.r[0] = random.uniform(xmin, xmax)
-            p.r[1] = random.uniform(ymin, ymax)
-            p.r[2] = random.uniform(zmin, zmax)
-            p.v[0] = p.v[1] = p.v[2] = 0.0
+            p = create_particle()
             logger.debug("%.2f, %.2f, %.2f" % (p.r[0], p.r[1], p.r[2]))
             particles.append(p)
 
@@ -724,7 +730,6 @@ def reshape(width, height):
 def init():
     global particles
 
-
     random.seed(3141592653589793238462643383279502884)
     pos   = vec4(-5.0, -5.0, 10.0, 0.0)
     red   = vec4(0.8, 0.1, 0.0, 1.0)
@@ -740,11 +745,7 @@ def init():
     nbody_init()
 
     for p in particles:
-        p.gl_color  = vec4(random.random(), random.random(), random.random(), 0.0)
-        if( p.m > 0.):
-            p.gl_color  = vec4(1.0, 0.5, 0.0, 0.7)
-        else:
-            p.gl_color  = vec4(0.0, 0.5, 1.0, 0.7)
+        p.gl_color  = p.color
         p.gl_index = glGenLists(1)
         glNewList(p.gl_index, GL_COMPILE)
         glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, p.gl_color)
