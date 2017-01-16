@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-16 11:51:26 hamada>
+# Time-stamp: <2017-01-16 21:14:28 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -252,7 +252,7 @@ def __calculate_boundary_condition():
                 pi.r[k] = pi.r[k] - r
 
 # hard wall
-def calculate_boundary_condition():
+def ___calculate_boundary_condition():
     global particles
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
@@ -264,6 +264,22 @@ def calculate_boundary_condition():
                 pi.v[k] = -pi.v[k]
             if ( pi.r[k] > c_max[k] ):
                 pi.v[k] = -pi.r[k]
+
+# soft wall
+def calculate_boundary_condition():
+    global particles
+    c_min = sparams.sim_box_min
+    c_max = sparams.sim_box_max
+
+    for pi in particles:
+        for k in range(3):
+            r = c_max[k]-c_min[k]
+            if ( pi.r[k] < c_min[k] ):
+                pi.r[k] = c_min[k] * 0.99
+                pi.v[k] = -pi.v[k] * 1e-3
+            if ( pi.r[k] > c_max[k] ):
+                pi.r[k] = c_max[k] * 0.99
+                pi.v[k] = -pi.r[k] * 1e-3
 
 def time_integration():
     time_integration_LeapFrog2ndOrder()
