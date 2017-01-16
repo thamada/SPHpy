@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-15 08:38:59 hamada>
+# Time-stamp: <2017-01-16 09:34:12 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -109,18 +109,22 @@ class Simulation_Parameters:
     def __init__(self, scale = 1.00,
                  sim_box_min = [-10., -10.0, -10.0],
                  sim_box_max = [ 10.,  10.0,  10.0],
-                 limit=200., dt=0.004, eps=0.02):
+                 limit=200., dt=0.004, eps=0.02, e_kin=0.0, e_pot=0.0, sim_step=0, sim_time=0.):
         self.limit = limit         #  velocity limitation at boundary condition
         self.dt    = dt            #  delta time for each time-stemps (shared time-step scheme)
         self.scale = scale         # multiples x,y,z by this value
         self.sim_box_min = sim_box_min # simulation box size
         self.sim_box_max = sim_box_max # simulation box size
         self.eps = eps # Aarseth Softening. (Aarseth, S. 1963, MNRAS, 126, 223)
+        self.energy_kinetic   = e_kin
+        self.energy_potential = e_pot
+        self.sim_step = sim_step
+        self.sim_time = sim_time
 
 class Viewer:
     def __init__(self,
                  is_3D=True, mouse_l=0, mouse_m=0, mouse_r=0, view_rot=[0., 180., 0.],
-                 fps_calc = 0., fps_phys=0., sim_step=0, sim_time=0.,
+                 fps_calc = 0., fps_phys=0., # sim_step=0, sim_time=0.,
                  sphere_radius_coef = 300, sphere_slic = 32, sphere_stack = 32,
                  mpos = [0,0], trans = [0., 1.4, -14.]):
         self.is_3D = is_3D
@@ -132,14 +136,14 @@ class Viewer:
         self.trans = [trans[i] for i in range (0, 3)]
         self.fps_calc = fps_calc
         self.fps_phys = fps_phys
-        self.sim_step = sim_step
-        self.sim_time = sim_time
+        # self.sim_step = sim_step
+        # self.sim_time = sim_time
         self.sphere_radius_coef = sphere_radius_coef
         self.sphere_slic = sphere_slic
         self.sphere_stack = sphere_stack
 
 class Particle:
-    def __init__(self, gl_index=0, gl_color=vec4(1.,1.,1.,1.) , mass=1., r=[0., 0., 0.], v=[0., 0., 0.], a=[0., 0., 0.], f=[0., 0., 0.], pot=[0., 0., 0.], radii=0.002):
+    def __init__(self, gl_index=0, gl_color=vec4(1.,1.,1.,1.) , mass=1., r=[0., 0., 0.], v=[0., 0., 0.], a=[0., 0., 0.], f=[0., 0., 0.], jk=[0., 0., 0.], pot=0., radii=0.002):
         self.gl_index = gl_index # index for OpenGL display list
         self.gl_color = gl_color
         self.m  = mass
@@ -147,7 +151,8 @@ class Particle:
         self.v = [v[i] for i in range (0, 3)]
         self.a = [a[i] for i in range (0, 3)]
         self.f = [f[i] for i in range (0, 3)]
-        self.pot = [pot[i] for i in range (0, 3)]
+        self.jk = [jk[i] for i in range (0, 3)]
+        self.pot = pot
         self.radii = radii
 
 
@@ -187,6 +192,20 @@ def nbody_init():
     logger.debug("# of particles: %d", len(particles))
 
 
+def calculate_energy():
+    global particles, sparams
+    ekin = 0.
+    epot = 0.
+    for pi in particles:
+        epot -= 0.5 * pi.m * pi.pot
+        for k in range(3):
+            ekin += 0.5 * pi.m * pi.v[k] * pi.v[k];
+    sparams.energy_kinetic   = ekin
+    sparams.energy_potential = epot
+    energy = ekin + epot
+    return energy
+
+
 
 def calculate_force():
     global particles, sparams
@@ -195,6 +214,7 @@ def calculate_force():
 
     for pi in particles:
         pi.a = [0., 0., 0.]
+        pi.pot = 0.
 
     npar = len(particles)
 
@@ -208,6 +228,10 @@ def calculate_force():
             r2i = r1i * r1i
             r3i = r1i * r2i
             dr3 = [dr[0]*r3i, dr[1]*r3i, dr[2]*r3i] 
+            # -- pot --
+            pi.pot += pj.m * r1i
+            pj.pot += pi.m * r1i
+            # -- acc --
             for dim in range(3):
                 pi.a[dim] += dr3[dim] * pj.m     # i-th particle
                 pj.a[dim] -= dr3[dim] * pi.m     # j-th particle
@@ -215,7 +239,7 @@ def calculate_force():
 #    for p in particles: print p.gl_index, p.a
 
 # periodic boundary
-def __calculate_boundary_condition():
+def calculate_boundary_condition():
     global particles
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
@@ -229,7 +253,7 @@ def __calculate_boundary_condition():
                 pi.r[k] = pi.r[k] - r
 
 # hard wall
-def calculate_boundary_condition():
+def __calculate_boundary_condition():
     global particles
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
@@ -249,6 +273,7 @@ def time_integration():
 is_first_integral=True
 def time_integration_LeapFrog2ndOrder():
     global particles
+    global sparams
     global is_first_integral
 
     dt = sparams.dt
@@ -271,13 +296,10 @@ def time_integration_LeapFrog2ndOrder():
     for pi in particles:
         pi.v = [ pi.v[k] + pi.a[k] * dt * 0.5 for k in range(0,3) ]
 
-    viewer.sim_time += dt
-    viewer.sim_step += 1
-
 
 # 1st order Euler integration
 def time_integration_Euler1stOrder():
-    global particles
+    global particles, sparams
 
     dt = sparams.dt
 
@@ -291,14 +313,16 @@ def time_integration_Euler1stOrder():
         pi.v = [ pi.v[k] + pi.a[k] * dt for k in range(0,3) ]
         pi.r = [ pi.r[k] + pi.v[k] * dt for k in range(0,3) ]
 
-    viewer.sim_time += dt
-    viewer.sim_step += 1
-
-
 
 def simulate():
     global particles
     time_integration()
+    if sparams.sim_step % 10 == 0:
+        calculate_energy()
+    sparams.sim_time += sparams.dt
+    sparams.sim_step += 1
+
+
 
 def  _glutSolidSphere(radius):
         glutSolidSphere(radius*viewer.sphere_radius_coef, viewer.sphere_slic, viewer.sphere_stack)
@@ -343,13 +367,13 @@ tStart = t0 = time.time()
 frames = 0
 
 def framerate():
-    global t0, frames, viewer
+    global t0, frames, viewer, sparams
     t = time.time()
     frames += 1
     if t - t0 >= 1.0:
         seconds = t - t0
         fps_calc = frames/seconds
-        fps_phys =  viewer.sim_time/(t - tStart)
+        fps_phys =  sparams.sim_time/(t - tStart)
 #        print "%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps_calc)
         t0 = t
         frames = 0
@@ -365,13 +389,15 @@ def draw_text_left_top():
         text_list.append( "simulation mode: 3D" )
     else:
         text_list.append( "simulation mode: 2D" )
-    text_list.append( "simulation time : %f" % viewer.sim_time )
-    text_list.append( "simulation steps: %d" % viewer.sim_step )
+    text_list.append( "Energy: %e" % (sparams.energy_kinetic + sparams.energy_potential))
+    text_list.append( "simulation time : %f" % sparams.sim_time )
+    text_list.append( "simulation steps: %d" % sparams.sim_step )
     text_list.append( "FPS:       %f" % viewer.fps_calc )
     text_list.append( "FPS(Phys): %f" % viewer.fps_phys )
     text_list.append( "# of particles: %d" % len(particles) )
     text_list.append( "dt: %.2e" % sparams.dt)
     text_list.append( "number of particles: %d" % len(particles))
+
 
     glColor4f( 1.0, 1.0, 0.5, 1.0 )
     glDisable(GL_DEPTH_TEST)
@@ -458,7 +484,6 @@ def draw_box():
 
 def update():
     global viewer
-    istep = viewer.sim_step
     simulate()
     draw()
 
