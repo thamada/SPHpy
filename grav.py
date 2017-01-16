@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-16 21:14:28 hamada>
+# Time-stamp: <2017-01-16 21:44:48 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -179,8 +179,9 @@ def nbody_init():
     zmin = sparams.sim_box_min[2]
 
     if 0 == len(particles):
-        for i in range(8):
+        for i in range(65):
             p = Particle()
+            p.m    = -1.0 # random.uniform(-1.0, 1.0) * 5.
             p.r[0] = random.uniform(xmin, xmax)
             p.r[1] = random.uniform(ymin, ymax)
             p.r[2] = random.uniform(zmin, zmax)
@@ -740,6 +741,10 @@ def init():
 
     for p in particles:
         p.gl_color  = vec4(random.random(), random.random(), random.random(), 0.0)
+        if( p.m > 0.):
+            p.gl_color  = vec4(1.0, 0.5, 0.0, 0.7)
+        else:
+            p.gl_color  = vec4(0.0, 0.5, 1.0, 0.7)
         p.gl_index = glGenLists(1)
         glNewList(p.gl_index, GL_COMPILE)
         glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, p.gl_color)
