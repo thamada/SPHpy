@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-16 09:34:12 hamada>
+# Time-stamp: <2017-01-16 11:15:03 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -239,7 +239,7 @@ def calculate_force():
 #    for p in particles: print p.gl_index, p.a
 
 # periodic boundary
-def calculate_boundary_condition():
+def __calculate_boundary_condition():
     global particles
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
@@ -253,7 +253,7 @@ def calculate_boundary_condition():
                 pi.r[k] = pi.r[k] - r
 
 # hard wall
-def __calculate_boundary_condition():
+def calculate_boundary_condition():
     global particles
     c_min = sparams.sim_box_min
     c_max = sparams.sim_box_max
@@ -396,6 +396,7 @@ def draw_text_left_top():
     text_list.append( "FPS(Phys): %f" % viewer.fps_phys )
     text_list.append( "# of particles: %d" % len(particles) )
     text_list.append( "dt: %.2e" % sparams.dt)
+    text_list.append( "eps: %.2e" % sparams.eps)
     text_list.append( "number of particles: %d" % len(particles))
 
 
@@ -594,6 +595,12 @@ def key(k, x, y):
         decrease_velocity()
     elif k == 'V':
         increase_velocity()
+    elif k == 'e':
+        sparams.eps /= 1.2
+        logger.info("eps: %e" % sparams.eps)
+    elif k == 'E':
+        sparams.eps *= 1.2
+        logger.info("eps: %e" % sparams.eps)
     elif k == '9':
         viewer.sphere_radius_coef *= 1.2
         print "sphere_radius_coef:", viewer.sphere_radius_coef
