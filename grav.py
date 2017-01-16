@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-16 11:15:03 hamada>
+# Time-stamp: <2017-01-16 11:35:51 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -109,7 +109,7 @@ class Simulation_Parameters:
     def __init__(self, scale = 1.00,
                  sim_box_min = [-10., -10.0, -10.0],
                  sim_box_max = [ 10.,  10.0,  10.0],
-                 limit=200., dt=0.004, eps=0.02, e_kin=0.0, e_pot=0.0, sim_step=0, sim_time=0.):
+                 limit=200., dt=1e-3, eps=4e-3, e_kin=0.0, e_pot=0.0, sim_step=0, sim_time=0.):
         self.limit = limit         #  velocity limitation at boundary condition
         self.dt    = dt            #  delta time for each time-stemps (shared time-step scheme)
         self.scale = scale         # multiples x,y,z by this value
@@ -166,7 +166,6 @@ def nbody_init():
     sparams.sim_box_min   = [ -7.0, -7.0,  -7.0]
     sparams.sim_box_max   = [  7.0,  7.0,   7.0]
     sparams.scale = 0.01
-    sparams.dt = 0.003
     sparams.limit = 100.0
     viewer.sphere_radius_coef = 144.0
     viewer.sphere_slic = 16
@@ -180,7 +179,7 @@ def nbody_init():
     zmin = sparams.sim_box_min[2]
 
     if 0 == len(particles):
-        for i in range(4):
+        for i in range(8):
             p = Particle()
             p.r[0] = random.uniform(xmin, xmax)
             p.r[1] = random.uniform(ymin, ymax)
