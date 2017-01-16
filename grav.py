@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-16 23:06:40 hamada>
+# Time-stamp: <2017-01-16 23:41:12 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -106,13 +106,12 @@ help_msg = [
 
 
 class Simulation_Parameters:
-    def __init__(self, scale = 1.00,
+    def __init__(self, 
                  sim_box_min = [-10., -10.0, -10.0],
                  sim_box_max = [ 10.,  10.0,  10.0],
-                 limit=200., dt=1e-3, eps=1.9e-3, e_kin=0.0, e_pot=0.0, sim_step=0, sim_time=0.):
+                 limit=100., dt=0.01, eps=0.25, e_kin=0.0, e_pot=0.0, sim_step=0, sim_time=0.):
         self.limit = limit         #  velocity limitation at boundary condition
         self.dt    = dt            #  delta time for each time-stemps (shared time-step scheme)
-        self.scale = scale         # multiples x,y,z by this value
         self.sim_box_min = sim_box_min # simulation box size
         self.sim_box_max = sim_box_max # simulation box size
         self.eps = eps # Aarseth Softening. (Aarseth, S. 1963, MNRAS, 126, 223)
@@ -167,10 +166,10 @@ def create_particle():
     zmax = sparams.sim_box_max[2]
     zmin = sparams.sim_box_min[2]
     p = Particle()
-    p.m    = 1.0 # if random.uniform(-1.0, 1.0) > 0.0 else -1.0
-    p.r[0] = random.uniform(xmin, xmax)
-    p.r[1] = random.uniform(ymin, ymax)
-    p.r[2] = random.uniform(zmin, zmax)
+    p.m    = 1.0e2 # if random.uniform(-1.0, 1.0) > 0.0 else -1.0
+    p.r[0] = random.uniform(xmin, xmax) * 0.2
+    p.r[1] = random.uniform(ymin, ymax) * 0.2
+    p.r[2] = random.uniform(zmin, zmax) * 0.2
     p.pot = 0.
     for k in range(3):
         p.v[k] = 0.
@@ -192,8 +191,6 @@ def nbody_init():
 
     sparams.sim_box_min   = [ -7.0, -7.0,  -7.0]
     sparams.sim_box_max   = [  7.0,  7.0,   7.0]
-    sparams.scale = 0.01
-    sparams.limit = 100.0
     viewer.sphere_radius_coef = 144.0
     viewer.sphere_slic = 16
     viewer.sphere_stack = 16
@@ -228,7 +225,8 @@ def calculate_force():
     ieps2 = sparams.eps * sparams.eps
 
     for pi in particles:
-        pi.a = [0., 0., 0.]
+        pi.a   = [0., 0., 0.]
+        pi.jk  = [0., 0., 0.]
         pi.pot = 0.
 
     npar = len(particles)
@@ -237,11 +235,13 @@ def calculate_force():
         pi = particles[i]
         for j in range(i+1, npar):
             pj = particles[j]
-            dr = [ (pj.r[k] - pi.r[k]) * sparams.scale for k in range(len(pi.r)) ]
-            r  = math.sqrt( dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2] + ieps2)
+            dr = [ (pj.r[k] - pi.r[k]) for k in range(3) ]
+            r2  = dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2] + ieps2
+            r   = math.sqrt(r2)
             r1i = 1.0/r
             r2i = r1i * r1i
             r3i = r1i * r2i
+            r5i = r2i * r3i
             dr3 = [dr[0]*r3i, dr[1]*r3i, dr[2]*r3i] 
             # -- pot --
             pi.pot += pj.m * r1i
@@ -277,8 +277,10 @@ def calculate_boundary_condition():
         for k in range(3):
             r = c_max[k]-c_min[k]
             if ( pi.r[k] < c_min[k] ):
+                pi.r[k] = c_min[k]
                 pi.v[k] = -pi.v[k]
             if ( pi.r[k] > c_max[k] ):
+                pi.r[k] = c_max[k]
                 pi.v[k] = -pi.r[k]
 
 # soft wall
