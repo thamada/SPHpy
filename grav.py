@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Time-stamp: <2017-01-16 23:51:23 hamada>
+# Time-stamp: <2017-01-17 19:40:38 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -559,7 +559,7 @@ def decrease_velocity():
     logger.info("decreasing velocity")
 
     for p in particles:
-        for k in range(3): p.v[k] = p.v[k] * 0.9
+        for k in range(3): p.v[k] = p.v[k] * 0.0
 
 def increase_velocity():
     global particles
