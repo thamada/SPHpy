@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Time-stamp: <2017-01-20 03:27:06 hamada>
+# Time-stamp: <2017-01-20 04:08:11 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -33,22 +33,24 @@ def create_logger():
     return _logger
 
 
-def closure_add(x0):
-    print ("sum: ", sum)
+def closure_add(c0):
+    sum = c0
     def closure_func(x):
-        return x0 + x
+        nonlocal sum
+        sum = sum + x
+        return sum
+
     return closure_func
 
-closure_get_logger = closure_add(10)
-closure_0 = closure_add(100)
-
+closure0 = closure_add(10)
+closure1 = closure_add(100)
 
 def get_logger(str_position = ''):
-    global closure_get_logger, closure_0
-    print ("closure  : ", closure_get_logger(1))
-    print ("closure_0: ", closure_0(1))
 
     log_basename = __file__
+    print ("!!!! closure0  : ", closure0(1))
+    print ("!!!! closure1  : ", closure1(1))
+
 
     # Don't use Python's hasattr()
     #     unless you're writing Python 3-only code 
@@ -659,9 +661,15 @@ def key(k, x, y):
         if False: logger.info(shelve_key)
     elif k == b'W':
         try:
+            do_uncompress('/tmp/grav.dump')
+            shelve_key = read_shelve('/tmp/grav.dump', logger)
+            do_compress('/tmp/grav.dump')
+
+            '''
             do_uncompress('/tmp/grav.dump',logger)
             shelve_key = read_shelve('/tmp/grav.dump',logger)
             do_compress('/tmp/grav.dump',logger)
+            '''
         except Exception as e:
             logger.error(str(type(e)))
             logger.error(str(e.args))
@@ -783,6 +791,7 @@ def visible(vis):
 
 def read_shelve(fname='/tmp/grav', logger=None):
     global particles
+    if logger is None: logger = get_logger('read_shelve()')
     pickle_protocol = pickle.HIGHEST_PROTOCOL
 
     try:
@@ -844,13 +853,13 @@ def do_cmd(cmd_str):
 def do_uncompress(filename, logger=None):
     if logger is None: logger = get_logger('do_uncompress()')
     check = do_cmd("hostname;time bzip2 -d %s.db.bz2" % filename )
-    # logger.debug("%s", check)
+    logger.debug("%s", check)
     return True
 
 def do_compress(filename, logger=None):
     if logger is None: logger = get_logger('do_compress()')
     check = do_cmd("hostname;time bzip2 -9 %s.db" % filename )
-    # logger.debug("%s", check)
+    logger.debug("%s", check)
     return True
 
 
