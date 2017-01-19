@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Time-stamp: <2017-01-20 03:11:05 hamada>
+# Time-stamp: <2017-01-20 03:16:59 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -33,18 +33,18 @@ def create_logger():
     return _logger
 
 
-def closure_add():
-    sum = 0 
+def closure_add(sum0):
+    sum = sum0
+    print ("sum: ", sum)
     def closure_func(x):
         sum = sum + x
     return closure_func
 
-closure_get_logger = closure_add()
+closure_get_logger = closure_add(0)
+closure_get_logger(1)
 
 def get_logger(str_position = ''):
     global closure_get_logger
-
-    closure_get_logger(1)
 
     log_basename = __file__
 
