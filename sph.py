@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # SPHpy
-# Time-stamp: <2017-01-07 08:29:54 hamada>
+# Time-stamp: <2017-01-20 02:57:58 hamada>
 import os
 import logging as LG
 
@@ -101,8 +101,6 @@ class Viewer:
         g  = (gx * gx + gy * gy)**0.5
         sphsim.grav_const[0] = -g * math.sin(2.*math.pi* z /360.)
         sphsim.grav_const[1] = -g * math.cos(2.*math.pi* z /360.)
-#        print "grav_const: ", sphsim.grav_const
-#        print "view_rot: ", self.view_rot
 
 
 class Particle: 
@@ -180,7 +178,6 @@ def sph_init():
             x = xmin
             while x <= xmax:
                 p = Particle()
-                # print "%.2f, %.2f, %.2f" % (x,y,z) # jjj
                 p.r[0] = x
                 p.r[1] = y
                 p.r[2] = z
@@ -192,7 +189,7 @@ def sph_init():
                 x += d
             y += d
         z += d
-        print "num of particles: ", len(particles)
+        print ("num of particles: ", len(particles))
 
     # calculate h9
     h = sparams.effective_radius
@@ -402,7 +399,6 @@ def framerate():
         seconds = t - t0
         fps_calc = frames/seconds
         fps_phys =  viewer.sim_time/(t - tStart)
-#        print "%.0f frames in %3.1f seconds = %6.3f FPS" % (frames,seconds,fps_calc)
         t0 = t
         frames = 0
         viewer.fps_calc = fps_calc
@@ -561,58 +557,58 @@ def adj_grav():
 def key(k, x, y):
     global viewer, sparams
 
-    if k == 'k':
+    if k == b'k':
         viewer.view_rot[2] += 5.0
-    elif k == 't':  # cahnge the box size
+    elif k == b't':  # cahnge the box size
         sparams.dt *= 0.8
-        print sparams.dt
-    elif k == 'T':  # cahnge the box size
+        print (sparams.dt)
+    elif k == b'T':  # cahnge the box size
         sparams.dt += 0.0001
-        print sparams.dt
-    elif k == 'j':
+        print (sparams.dt)
+    elif k == b'j':
         viewer.view_rot[2] -= 5.0
-    elif k == 'J':  # cahnge the box size
+    elif k == b'J':  # cahnge the box size
         sparams.sim_box_min   = [ sparams.sim_box_min[k] / 1.3 for k in  range(3)]
         sparams.sim_box_max   = [ sparams.sim_box_max[k] / 1.3 for k in  range(3)]
-    elif k == 'K':  # cahnge the box size
+    elif k == b'K':  # cahnge the box size
         sparams.sim_box_min   = [ sparams.sim_box_min[k] * 1.3 for k in  range(3)]
         sparams.sim_box_max   = [ sparams.sim_box_max[k] * 1.3 for k in  range(3)]
-    elif k == 'r':
+    elif k == b'r':
         reset_pos_vel_acc()
-    elif k == 'e':
+    elif k == b'e':
         sparams.boundary_eps *= 1.5
-    elif k == 'E':
+    elif k == b'E':
         sparams.boundary_eps /= 1.5
-        print sparams.boundary_eps
-    elif k == ' ':
+        print (sparams.boundary_eps)
+    elif k == b' ':
         add_particle()
-    elif k == '-':
+    elif k == b'-':
         del_particle()
-    elif k == '1':
-        print particles[0].r, particles[0].v, particles[0].f
-    elif k == 'h':
-        for s in help_msg: print s 
-    elif k == '2':
+    elif k == b'1':
+        print (particles[0].r, particles[0].v, particles[0].f)
+    elif k == b'h':
+        for s in help_msg: print (s)
+    elif k == b'2':
         if viewer.is_3D:  
-            print "3D -> 2D"
+            print ("3D -> 2D")
             viewer.is_3D = False
         else:
-            print "2D -> 3D"
+            print ("2D -> 3D")
             viewer.is_3D = True
-    elif k == 'v':
+    elif k == b'v':
         sparams.viscosity += 0.005
-        print "sparams.viscosity: ", sparams.viscosity
-    elif k == 'V':
+        print ("sparams.viscosity: ", sparams.viscosity)
+    elif k == b'V':
         sparams.viscosity -= 0.005
         if sparams.viscosity < 0. : sparams.viscosity = 1e-4
-        print "sparams.viscosity: ", sparams.viscosity
-    elif k == '9':
+        print ("sparams.viscosity: ", sparams.viscosity)
+    elif k == b'9':
         viewer.sphere_radius_coef *= 1.2
-        print "sphere_radius_coef:", viewer.sphere_radius_coef
-    elif k == '0':
+        print ("sphere_radius_coef:", viewer.sphere_radius_coef)
+    elif k == b'0':
         viewer.sphere_radius_coef /= 1.2
-        print "sphere_radius_coef:", viewer.sphere_radius_coef
-    elif k == 'q':
+        print ("sphere_radius_coef:", viewer.sphere_radius_coef)
+    elif k == b'q':
         sys.exit(0)
     elif ord(k) == 27: # Escape
         sys.exit(0)
@@ -669,7 +665,7 @@ def mouse(button, state, x, y):
 
 def motion(x, y):
     global viewer
-    print "motion: ", x, y, viewer.trans
+    print ("motion: ", x, y, viewer.trans)
     if viewer.mouse_l == 1 :
         speed = 1.2
         viewer.view_rot[0] = (y - viewer.mpos[1]) * speed
@@ -677,7 +673,7 @@ def motion(x, y):
     elif viewer.mouse_r == 1:
         viewer.trans[1] += (x - viewer.mpos[0]) * 0.01
         viewer.trans[2] -= (y - viewer.mpos[1]) * 0.01
-        print viewer.trans
+        print (viewer.trans)
 
     if viewer.mouse_l ==1 or viewer.mouse_m == 1 or viewer.mouse_r == 1:
         glutPostRedisplay()
@@ -750,10 +746,10 @@ if __name__ == '__main__':
     glutVisibilityFunc(visible)
 
     if "--info" in sys.argv:
-        print "GL_RENDERER   = ", glGetString(GL_RENDERER)
-        print "GL_VERSION    = ", glGetString(GL_VERSION)
-        print "GL_VENDOR     = ", glGetString(GL_VENDOR)
-        print "GL_EXTENSIONS = ", glGetString(GL_EXTENSIONS)
+        print ("GL_RENDERER   = ", glGetString(GL_RENDERER))
+        print ("GL_VERSION    = ", glGetString(GL_VERSION))
+        print ("GL_VENDOR     = ", glGetString(GL_VENDOR))
+        print ("GL_EXTENSIONS = ", glGetString(GL_EXTENSIONS))
 
     glutMainLoop()
 

@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# Time-stamp: <2017-01-17 19:40:38 hamada>
+#!/usr/bin/env python3
+# Time-stamp: <2017-01-20 03:11:05 hamada>
 # GRAVpy
 # Copyright(c) 2017 by Tsuyoshi Hamada. All rights reserved.
 import os
@@ -14,7 +14,8 @@ import sys, time, math, random
 import shelve
 import pickle
 import hashlib
-import commands
+#import commands
+import subprocess
 
 def create_logger():
     # create logger
@@ -32,7 +33,18 @@ def create_logger():
     return _logger
 
 
+def closure_add():
+    sum = 0 
+    def closure_func(x):
+        sum = sum + x
+    return closure_func
+
+closure_get_logger = closure_add()
+
 def get_logger(str_position = ''):
+    global closure_get_logger
+
+    closure_get_logger(1)
 
     log_basename = __file__
 
@@ -573,77 +585,77 @@ def increase_velocity():
 def key(k, x, y):
     global viewer, sparams, particles
 
-    if k == 'k':
+    if k == b'k':
         viewer.view_rot[2] += 5.0
-    elif k == 'j':
+    elif k == b'j':
         viewer.view_rot[2] -= 5.0
 
-    elif k == 'i':
+    elif k == b'i':
         viewer.view_rot[0] -= 5.0
-    elif k == 'u':
+    elif k == b'u':
         viewer.view_rot[0] += 5.0
 
-    elif k == 't':  # cahnge the box size
+    elif k == b't':  # cahnge the box size
         sparams.dt *= 0.8
         logger.info(sparams.dt)
-    elif k == 'T':  # cahnge the box size
+    elif k == b'T':  # cahnge the box size
         sparams.dt += 0.0001
         logger.info(sparams.dt)
-    elif k == 'J':  # cahnge the box size
+    elif k == b'J':  # cahnge the box size
         sparams.sim_box_min   = [ sparams.sim_box_min[k] / 1.3 for k in  range(3)]
         sparams.sim_box_max   = [ sparams.sim_box_max[k] / 1.3 for k in  range(3)]
-    elif k == 'K':  # cahnge the box size
+    elif k == b'K':  # cahnge the box size
         sparams.sim_box_min   = [ sparams.sim_box_min[k] * 1.3 for k in  range(3)]
         sparams.sim_box_max   = [ sparams.sim_box_max[k] * 1.3 for k in  range(3)]
-    elif k == 'r':
+    elif k == b'r':
         reset_pos_vel_acc()
-    elif k == 'o':
+    elif k == b'o':
         for p in particles:
             if 0.0 < p.radii: p.radii -= 1e-4
         logger.info(particles[0].radii)
 
-    elif k == 'O':
+    elif k == b'O':
         for p in particles:
             if 10.0 > p.radii: p.radii += 1e-4
         logger.info(particles[0].radii)
 
-    elif k == ' ':
+    elif k == b' ':
         add_particle()
-    elif k == '-':
+    elif k == b'-':
         del_particle()
-    elif k == '1':
+    elif k == b'1':
         logger.info("r,v,a:\n\t%s\n\t%s\n\t%s" % (particles[0].r,particles[0].v,particles[0].a))
-    elif k == 'h':
-        for s in help_msg: print s
-    elif k == '2':
+    elif k == b'h':
+        for s in help_msg: print (s)
+    elif k == b'2':
         if viewer.is_3D:
-            print "3D -> 2D"
+            print ("3D -> 2D")
             viewer.is_3D = False
         else:
-            print "2D -> 3D"
+            print ("2D -> 3D")
             viewer.is_3D = True
-    elif k == 'v':
+    elif k == b'v':
         decrease_velocity()
-    elif k == 'V':
+    elif k == b'V':
         increase_velocity()
-    elif k == 'e':
+    elif k == b'e':
         sparams.eps /= 1.2
         logger.info("eps: %e" % sparams.eps)
-    elif k == 'E':
+    elif k == b'E':
         sparams.eps *= 1.2
         logger.info("eps: %e" % sparams.eps)
-    elif k == '9':
+    elif k == b'9':
         viewer.sphere_radius_coef *= 1.2
-        print "sphere_radius_coef:", viewer.sphere_radius_coef
-    elif k == '0':
+        print ("sphere_radius_coef:", viewer.sphere_radius_coef)
+    elif k == b'0':
         viewer.sphere_radius_coef /= 1.2
-        print "sphere_radius_coef:", viewer.sphere_radius_coef
-    elif k == 'w':
+        print ("sphere_radius_coef:", viewer.sphere_radius_coef)
+    elif k == b'w':
         do_uncompress('/tmp/grav.dump',logger)
         shelve_key = write_shelve('/tmp/grav.dump',logger)
         do_compress('/tmp/grav.dump',logger)
         if False: logger.info(shelve_key)
-    elif k == 'W':
+    elif k == b'W':
         try:
             do_uncompress('/tmp/grav.dump',logger)
             shelve_key = read_shelve('/tmp/grav.dump',logger)
@@ -654,7 +666,7 @@ def key(k, x, y):
             logger.error(e.message)
             sys.exit(-1)
         if False: logger.info(shelve_key)
-    elif k == 'q':
+    elif k == b'q':
         sys.exit(0)
     elif ord(k) == 27: # Escape
         sys.exit(0)
@@ -711,7 +723,7 @@ def mouse(button, state, x, y):
 def motion(x, y):
     global viewer, sparams
 
-    print "motion: ", x, y, viewer.trans
+    print ("motion: ", x, y, viewer.trans)
     if viewer.mouse_l == 1 :
         speed = 1.2
         viewer.view_rot[0] = (y - viewer.mpos[1]) * speed
@@ -719,7 +731,7 @@ def motion(x, y):
     elif viewer.mouse_r == 1:
         viewer.trans[1] += (x - viewer.mpos[0]) * 0.01
         viewer.trans[2] -= (y - viewer.mpos[1]) * 0.01
-        print viewer.trans
+        print (viewer.trans)
 
     if viewer.mouse_l ==1 or viewer.mouse_m == 1 or viewer.mouse_r == 1:
         glutPostRedisplay()
@@ -824,15 +836,18 @@ def write_shelve(fname='/tmp/grav.dump', logger=None):
 
     return True
 
+def do_cmd(cmd_str):
+    return subprocess.getoutput(cmd_str)
+
 def do_uncompress(filename, logger=None):
     if logger is None: logger = get_logger('do_uncompress()')
-    check = commands.getoutput("hostname;time bzip2 -d %s.db.bz2" % filename )
+    check = do_cmd("hostname;time bzip2 -d %s.db.bz2" % filename )
     # logger.debug("%s", check)
     return True
 
 def do_compress(filename, logger=None):
     if logger is None: logger = get_logger('do_compress()')
-    check = commands.getoutput("hostname;time bzip2 -9 %s.db" % filename )
+    check = do_cmd("hostname;time bzip2 -9 %s.db" % filename )
     # logger.debug("%s", check)
     return True
 

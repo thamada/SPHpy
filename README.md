@@ -1,11 +1,11 @@
-Time-stamp: <2017-01-15 06:54:05 hamada>
+Time-stamp: <2017-01-20 03:00:34 hamada>
 
 # SPHpy:
 Smoothed Particle Hydrodynamics simulation written in python.
 
 ## Requirements
 
-- python 2.7.x
+- python 3.6.x
 - pyOpenGL
 
 
