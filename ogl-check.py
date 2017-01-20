@@ -1,5 +1,5 @@
-#!/usr/bin/env python2
-#Time-stamp: <2017-01-08 02:27:52 hamada>
+#!/usr/bin/env python3
+#Time-stamp: <2017-01-21 04:59:09 hamada>
 import sys
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -51,13 +51,13 @@ def reshape(w,h):
 
 def key(k, x, y):
     logger.info('key: "%c" (%d, %d) ', k, x, y)
-    if 'q'     == k: quit_app(0) # q
-    if 'a'     == k: quit_app(1) # a
-    if 'b'     == k: quit_app(2) # b
-    if 'c'     == k: quit_app(3) # c
-    if 'd'     == k: quit_app(4) # d
-    if chr(27) == k: quit_app(0) # ESC
-    if chr(13) == k: quit_app(0) # Enter
+    if b'q'     == k: quit_app(0) # q
+    if b'a'     == k: quit_app(1) # a
+    if b'b'     == k: quit_app(2) # b
+    if b'c'     == k: quit_app(3) # c
+    if b'd'     == k: quit_app(4) # d
+    if b'\x1b'  == k: quit_app(0) # ESC
+    if b'\r'    == k: quit_app(0) # Enter
 
 def quit_app(id):
     if 0 == id:
